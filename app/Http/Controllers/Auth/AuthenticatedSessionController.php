@@ -33,11 +33,6 @@ class AuthenticatedSessionController extends Controller
         $credentials = $request->only('email', 'password');
         $user = Auth::guard('web')->getProvider()->retrieveByCredentials($credentials);
 
-
-        if ($user &&!$user->is_active) {
-            return redirect()->back()->withErrors(['email' => 'Votre compte n\'est pas actif. Veuillez contacter l\'administrateur.']);
-        }
-
         $request->authenticate();
 
         $request->session()->regenerate();

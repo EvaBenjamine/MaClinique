@@ -6,9 +6,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
+    use HasRoles;
+
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
@@ -23,7 +26,6 @@ class User extends Authenticatable
         'telephone',
         'adresse',
         'role',
-        'matricule',
         'email',
         'password',
     ];
@@ -49,5 +51,37 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * Relation avec le modèle Admin
+     */
+    public function admin()
+    {
+        return $this->hasOne(Admin::class);
+    }
+
+    /**
+     * Relation avec le modèle SageFemme
+     */
+    public function sageFemme()
+    {
+        return $this->hasOne(SageFemme::class);
+    }
+
+    /**
+     * Relation avec le modèle Secretaire
+     */
+    public function secretaire()
+    {
+        return $this->hasOne(Secretaire::class);
+    }
+
+    /**
+     * Relation avec le modèle Patiente
+     */
+    public function patiente()
+    {
+        return $this->hasOne(Patiente::class);
     }
 }
