@@ -31,7 +31,7 @@ const AjoutPatient: React.FC = () => {
   return (
     <div className="flex min-h-screen bg-gray-100">
       {/* Sidebar */}
-      <Sidebar />
+      <Sidebar children={undefined} />
 
       {/* Contenu principal */}
       <div className="flex-1 p-6">
@@ -109,6 +109,7 @@ const AjoutPatient: React.FC = () => {
         </div>
       </div>
     </div>
+
   );
 };
 

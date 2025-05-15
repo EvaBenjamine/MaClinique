@@ -1,5 +1,4 @@
 import { Disclosure } from '@headlessui/react';
-import Link from 'next/link';
 import {
   ChevronDown,
   LayoutDashboard,
@@ -14,9 +13,9 @@ interface SidebarProps {
 
 export default function Sidebar({ children }: SidebarProps) {
   return (
-    <div className="flex min-h-screen bg-pink-50">
+    <div className="flex min-h-screen bg-pink-100">
       {/* Sidebar */}
-      <aside className="w-72 bg-gradient-to-b from-pink-400 to-pink-600 text-white p-6 shadow-2xl rounded-r-3xl">
+      <aside className="w-72 bg-gradient-to-b from-pink-300 to-violet-500 text-white p-6 shadow-2xl rounded-r-3xl">
         <div className="mb-10">
           <h1 className="text-4xl font-bold text-center tracking-wide font-serif">
             💖 MaClinique
@@ -26,7 +25,7 @@ export default function Sidebar({ children }: SidebarProps) {
         {/* Dashboard */}
         <a
           href="/dashboard"
-          className="flex items-center gap-3 px-4 py-2 hover:bg-pink-500 hover:shadow rounded-md transition"
+          className="flex items-center gap-3 px-4 py-2 hover:bg-violet-600 hover:shadow rounded-md transition"
         >
           <LayoutDashboard size={20} />
           <span className="font-medium">Dashboard</span>
@@ -36,7 +35,7 @@ export default function Sidebar({ children }: SidebarProps) {
         <Disclosure>
           {({ open }) => (
             <div className="mt-4">
-              <Disclosure.Button className="flex w-full items-center justify-between px-4 py-2 hover:bg-pink-500 hover:shadow rounded-md transition">
+              <Disclosure.Button className="flex w-full items-center justify-between px-4 py-2 hover:bg-violet-600 hover:shadow rounded-md transition">
                 <span className="flex items-center gap-3">
                   <Users size={20} />
                   Patientes
@@ -45,7 +44,7 @@ export default function Sidebar({ children }: SidebarProps) {
                   className={`transition-transform duration-300 ${open ? 'rotate-180' : ''}`}
                 />
               </Disclosure.Button>
-              <Disclosure.Panel className="pl-12 mt-2 space-y-2 text-sm text-pink-100">
+              <Disclosure.Panel className="pl-12 mt-2 space-y-2 text-sm text-violet-100">
                 <a
                   href="/patientes/liste"
                   className="block hover:text-yellow-200 transition"
@@ -67,7 +66,7 @@ export default function Sidebar({ children }: SidebarProps) {
         <Disclosure>
           {({ open }) => (
             <div className="mt-4">
-              <Disclosure.Button className="flex w-full items-center justify-between px-4 py-2 hover:bg-pink-500 hover:shadow rounded-md transition">
+              <Disclosure.Button className="flex w-full items-center justify-between px-4 py-2 hover:bg-violet-600 hover:shadow rounded-md transition">
                 <span className="flex items-center gap-3">
                   <Stethoscope size={20} />
                   Consultations
@@ -76,7 +75,7 @@ export default function Sidebar({ children }: SidebarProps) {
                   className={`transition-transform duration-300 ${open ? 'rotate-180' : ''}`}
                 />
               </Disclosure.Button>
-              <Disclosure.Panel className="pl-12 mt-2 space-y-2 text-sm text-pink-100">
+              <Disclosure.Panel className="pl-12 mt-2 space-y-2 text-sm text-violet-100">
                 <a
                   href="/consultations/prenatales"
                   className="block hover:text-yellow-200 transition"
@@ -94,10 +93,41 @@ export default function Sidebar({ children }: SidebarProps) {
           )}
         </Disclosure>
 
+        {/* Dossiers médicaux */}
+        <Disclosure>
+          {({ open }) => (
+            <div className="mt-4">
+              <Disclosure.Button className="flex w-full items-center justify-between px-4 py-2 hover:bg-violet-600 hover:shadow rounded-md transition">
+                <span className="flex items-center gap-3">
+                  <Stethoscope size={20} />
+                  Dossiers médicaux
+                </span>
+                <ChevronDown
+                  className={`transition-transform duration-300 ${open ? 'rotate-180' : ''}`}
+                />
+              </Disclosure.Button>
+              <Disclosure.Panel className="pl-12 mt-2 space-y-2 text-sm text-violet-100">
+                <a
+                  href="/dossierMedical/VoirDossier"
+                  className="block hover:text-yellow-200 transition"
+                >
+                  Voir Dossier
+                </a>
+                <a
+                  href="/dossierMedical/postnatales"
+                  className="block hover:text-yellow-200 transition"
+                >
+                  👶 Postnatales
+                </a>
+              </Disclosure.Panel>
+            </div>
+          )}
+        </Disclosure>
+
         {/* Rapports */}
         <a
           href="/rapports"
-          className="flex items-center gap-3 px-4 py-2 mt-4 hover:bg-pink-500 hover:shadow rounded-md transition"
+          className="flex items-center gap-3 px-4 py-2 mt-4 hover:bg-violet-600 hover:shadow rounded-md transition"
         >
           <FileText size={20} />
           <span className="font-medium">Rapports</span>

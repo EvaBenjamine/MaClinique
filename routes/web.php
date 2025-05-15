@@ -19,6 +19,9 @@ Route::get('/patientes/ajouter', function () {
 Route::get('/patientes/liste', function () {
     return Inertia::render('patientes/liste'); // Cette vue React se trouve dans resources/js/pages
 });
+Route::get('/dossierMedical/VoirDossier', function () {
+    return Inertia::render('dossierMedical/VoirDossier');
+});
 
 
 

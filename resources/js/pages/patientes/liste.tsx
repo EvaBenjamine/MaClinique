@@ -117,7 +117,7 @@ const Liste: React.FC = () => {
 
   return (
     <div className="h-screen bg-pink-50 flex">
-      <Sidebar />
+      <Sidebar children={undefined} />
       <div className="flex-1 p-6 overflow-y-auto">
         {/* Barre d'infos simplifiée */}
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
