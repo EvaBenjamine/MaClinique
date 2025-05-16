@@ -1,0 +1,105 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f8ff; /* Couleur de fond claire */
+    margin: 0;
+    padding: 0;
+  }
+
+  .dossier-medical {
+    display: flex;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    max-width: 1400px;
+    margin: 20px auto;
+  }
+
+  .sidebar {
+    width: 200px;
+    background-color: #f8f9fa;
+    border-right: 1px solid #ccc;
+    padding: 20px;
+  }
+
+  .main-content {
+    flex-grow: 1;
+    padding: 20px;
+  }
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
+  .header h1 {
+    margin: 0;
+    color: #333;
+  }
+
+  .user-profile img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+  }
+
+  .content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  .diagnosis-history,
+  .patient-status,
+  .heart-rate,
+  .documents {
+    border: 1px solid #ccc;
+    padding: 20px;
+    border-radius: 8px;
+    background-color: #ffe6fd; /* Couleur rose clair */
+  }
+
+  .status-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  .status-item {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+  }
+
+  .status-note {
+    font-size: 0.8em;
+    color: #777;
+  }
+
+  h2 {
+    color: #333;
+  }
+
+  h3 {
+    color: #555;
+  }
+
+  p {
+    color: #333;
+  }
+
+  ul {
+    list-style-type: none;
+    padding: 0;
+  }
+
+  ul li {
+    background-color: #fff;
+    margin-bottom: 10px;
+    padding: 10px;
+    border-radius: 4px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+  }
