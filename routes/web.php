@@ -27,7 +27,7 @@ Route::get('/dossierMedical/VoirDossier', function () {
 // Gestion des utilisateurs
 Route::get('/users', [AdminController::class, 'index'])->name('users.index');
 Route::get('/users/{id}', [AdminController::class, 'show'])->name('users.show');
-Route::post('/users', [AdminController::class, 'storeAdmin'])->name('users.store');
+Route::post('/admins', [AdminController::class, 'storeAdmin'])->name('admins.store');
 Route::post('/sage-femmes', [AdminController::class, 'storeSageFemme'])->name('sage-femmes.store');
 Route::post('/secretaires', [AdminController::class, 'storeSecretaire'])->name('secretaires.store');
 

@@ -1,396 +1,411 @@
-'use client';
-
-import type React from 'react';
-
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Card } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
-import { useState } from 'react';
+import type { User, UserDetails } from '@/types/models';
+import { useForm } from '@inertiajs/react';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
+import type React from 'react';
+import { useEffect, useState } from 'react';
+import { Input } from './ui/input';
+import { Label as FormLabel } from './ui/label';
 
-// Define the form data structure
-type FormData = {
-    userType: string;
-    name: string;
+interface UserMultiStepFormProps {
+    userType: string | null;
+    userData?: User | null;
+    userDetails?: UserDetails | null;
+    isEditing?: boolean;
+    isCreating?: boolean;
+    onComplete: () => void;
+}
+
+interface FormData {
+    [key: string]: string | number;
+    id: number | string;
+    nom: string;
+    prenom: string;
     email: string;
-    companyName?: string;
-    companySize?: string;
-    industry?: string;
-    serviceType?: string;
-    budget?: string;
-    requirements?: string[];
-    contactPreference?: string;
-};
+    role: string;
+    //password: string;
+    //password_confirmation: string;
 
-export default function MultiStepForm() {
-    const [step, setStep] = useState(1);
-    const [formData, setFormData] = useState<FormData>({
-        userType: '',
-        name: '',
-        email: '',
+    // Données spécifiques pour sage-femme et secrétaire
+    matricule: string;
+    grade: string;
+    specialite: string;
+
+    // Données communes
+    numero_telephone: string;
+    numero_urgence: string;
+    adresse: string;
+}
+
+export default function UserMultiStepForm({
+    userType,
+    userData = null,
+    userDetails = null,
+    isEditing = false,
+    isCreating = false,
+    onComplete,
+}: UserMultiStepFormProps) {
+    const [step, setStep] = useState<number>(1);
+    const [totalSteps, setTotalSteps] = useState<number>(4);
+
+    // Formulaire Inertia pour la soumission des données
+    const { data, setData, post, put, processing, errors } = useForm<FormData>({
+        // Données de base de l'utilisateur
+        id: userData?.id || '',
+        nom: userData?.nom || '',
+        prenom: userData?.prenom || '',
+        email: userData?.email || '',
+        role: userType || '',
+        //password: '',
+        //password_confirmation: '',
+
+        // Données spécifiques pour sage-femme et secrétaire
+        matricule: userDetails?.matricule || '',
+        grade: userDetails?.grade || '',
+        specialite: userDetails?.specialite || '',
+
+        // Données communes
+        numero_telephone: userDetails?.numero_telephone || '',
+        numero_urgence: userDetails?.numero_urgence || '',
+        adresse: userDetails?.adresse || '',
     });
 
-    // Update form data
-    const updateFormData = (field: string, value: unknown) => {
-        setFormData((prev) => ({
-            ...prev,
-            [field]: value,
-        }));
-    };
+    // Déterminer le nombre total d'étapes en fonction du type d'utilisateur et du mode (création/édition)
+    useEffect(() => {
+        if (isEditing) {
+            // En mode édition, pas d'étape mot de passe
+            setTotalSteps(data.role === 'patiente' ? 3 : 3);
+        } else {
+            // En mode création
+            setTotalSteps(data.role === 'patiente' ? 4 : 4);
+        }
+    }, [data.role, isEditing]);
 
-    // Handle next step
-    const handleNext = () => {
-        setStep((prev) => prev + 1);
-    };
-
-    // Handle previous step
-    const handlePrevious = () => {
-        setStep((prev) => prev - 1);
-    };
-
-    // Handle form submission
+    // Gérer la soumission du formulaire
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        console.log('Form submitted:', formData);
-        // Here you would typically send the data to your backend
-        setStep(5); // Move to success step
+
+        if (step < totalSteps) {
+            // Passer à l'étape suivante si le formulaire est valide
+            if (isStepValid()) {
+                setStep(step + 1);
+            }
+        } else {
+            // Soumettre le formulaire
+            if (isEditing && userData) {
+                put(route('users.update', userData.id), {
+                    onSuccess: () => {
+                        onComplete();
+                    },
+                });
+            } else {
+                if (data.role === 'admin') {
+                    post(route('admins.store'), {
+                        onSuccess: () => {
+                            onComplete();
+                        },
+                    });
+                } else if (data.role === 'sage_femme') {
+                    post(route('sage-femmes.store'), {
+                        onSuccess: () => {
+                            onComplete();
+                        },
+                    });
+                } else if (data.role === 'secretaire') {
+                    post(route('secretaires.store'), {
+                        onSuccess: () => {
+                            onComplete();
+                        },
+                    });
+                }
+            }
+        }
     };
 
-    // Check if current step is valid
-    const isStepValid = () => {
+    // Vérifier si l'étape actuelle est valide
+    const isStepValid = (): boolean => {
+        // Validation personnalisée pour chaque étape
         switch (step) {
-            case 1:
-                return formData.userType !== '';
-            case 2:
-                return (
-                    formData.name !== '' &&
-                    formData.email !== '' &&
-                    (formData.userType === 'individual' || (formData.companyName !== '' && formData.companySize !== ''))
-                );
-            case 3:
-                return formData.serviceType !== '';
-            case 4:
-                return formData.budget !== '' && (formData.requirements?.length ?? 0) > 0 && formData.contactPreference !== '';
+            case 1: // Informations de base
+                return Boolean(data.nom && data.prenom && data.email && !errors.nom && !errors.prenom && !errors.email);
+            case 2: // Informations spécifiques au rôle
+                if (data.role === 'patiente') {
+                    return Boolean(data.age && data.numero_telephone && !errors.age && !errors.numero_telephone);
+                } else if (data.role === 'sage_femme' || data.role === 'secretaire') {
+                    return Boolean(data.matricule && data.grade && !errors.matricule && !errors.grade);
+                }
+                return true;
+            case 3: // Adresse et informations supplémentaires
+                return Boolean(data.adresse && !errors.adresse);
+            case 4: // Mot de passe (uniquement en création)
+                if (!isEditing) {
+                    return true;
+                }
+                return true;
             default:
                 return true;
         }
     };
 
-    // Get available service types based on user type and industry
-    const getServiceTypes = () => {
-        if (formData.userType === 'individual') {
-            return ['Personal Consultation', 'Career Coaching', 'Financial Planning'];
-        } else {
-            switch (formData.industry) {
-                case 'technology':
-                    return ['Software Development', 'IT Consulting', 'Cloud Migration'];
-                case 'healthcare':
-                    return ['Medical Systems', 'Patient Management', 'Healthcare Analytics'];
-                case 'finance':
-                    return ['Financial Analysis', 'Investment Strategy', 'Risk Management'];
-                default:
-                    return ['General Consulting', 'Project Management', 'Strategic Planning'];
-            }
+    // Gérer le retour à l'étape précédente
+    const handlePrevious = () => {
+        if (step > 1) {
+            setStep(step - 1);
         }
     };
 
-    // Render form steps
+    // Calculer le pourcentage de progression
+    const progress = Math.min((step / totalSteps) * 100, 100);
+
+    // Rendu de l'étape actuelle
     const renderStep = () => {
         switch (step) {
             case 1:
                 return (
                     <div className="space-y-4">
-                        <CardHeader>
-                            <CardTitle>Step 1: Select User Type</CardTitle>
-                            <CardDescription>Please select the type of user you are</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <RadioGroup value={formData.userType} onValueChange={(value) => updateFormData('userType', value)} className="space-y-3">
-                                <div className="flex items-center space-x-2">
-                                    <RadioGroupItem value="individual" id="individual" />
-                                    <Label htmlFor="individual">Individual</Label>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                    <RadioGroupItem value="business" id="business" />
-                                    <Label htmlFor="business">Business</Label>
-                                </div>
-                            </RadioGroup>
-                        </CardContent>
-                        <CardFooter className="flex justify-between">
-                            <div></div>
-                            <Button onClick={handleNext} disabled={!isStepValid()}>
-                                Next <ArrowRight className="ml-2 h-4 w-4" />
-                            </Button>
-                        </CardFooter>
-                    </div>
-                );
-            case 2:
-                return (
-                    <div className="space-y-4">
-                        <CardHeader>
-                            <CardTitle>Step 2: Your Information</CardTitle>
-                            <CardDescription>
-                                {formData.userType === 'individual' ? 'Please provide your personal details' : 'Please provide your company details'}
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
+                        <h2 className="text-lg font-medium">Informations de base</h2>
+
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <div className="space-y-2">
-                                <Label htmlFor="name">Name</Label>
-                                <Input
-                                    id="name"
-                                    value={formData.name}
-                                    onChange={(e) => updateFormData('name', e.target.value)}
-                                    placeholder="Your name"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="email">Email</Label>
-                                <Input
-                                    id="email"
-                                    type="email"
-                                    value={formData.email}
-                                    onChange={(e) => updateFormData('email', e.target.value)}
-                                    placeholder="Your email"
-                                />
+                                <FormLabel htmlFor="prenom">Prénom</FormLabel>
+                                <Input id="prenom" value={data.prenom} onChange={(e) => setData('prenom', e.target.value)} placeholder="Prénom" />
+                                {errors.prenom && <p className="text-sm text-red-500">{errors.prenom}</p>}
                             </div>
 
-                            {formData.userType === 'business' && (
-                                <>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="companyName">Company Name</Label>
-                                        <Input
-                                            id="companyName"
-                                            value={formData.companyName || ''}
-                                            onChange={(e) => updateFormData('companyName', e.target.value)}
-                                            placeholder="Your company name"
-                                        />
+                            <div className="space-y-2">
+                                <FormLabel htmlFor="nom">Nom</FormLabel>
+                                <Input id="nom" value={data.nom} onChange={(e) => setData('nom', e.target.value)} placeholder="Nom" />
+                                {errors.nom && <p className="text-sm text-red-500">{errors.nom}</p>}
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <FormLabel htmlFor="email">Email</FormLabel>
+                            <Input
+                                id="email"
+                                type="email"
+                                value={data.email}
+                                onChange={(e) => setData('email', e.target.value)}
+                                placeholder="email@example.com"
+                            />
+                            {errors.email && <p className="text-sm text-red-500">{errors.email}</p>}
+                        </div>
+
+                        {isCreating && (
+                            <div className="space-y-2">
+                                <FormLabel>Role de l'utilisateur</FormLabel>
+                                <RadioGroup value={data.role} onValueChange={(value) => setData('role', value)} className="space-y-3">
+                                    <div className="flex items-center space-x-2">
+                                        <RadioGroupItem value="admin" id="admin" />
+                                        <FormLabel htmlFor="admin">Administrateur</FormLabel>
                                     </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="companySize">Company Size</Label>
-                                        <Select value={formData.companySize} onValueChange={(value) => updateFormData('companySize', value)}>
-                                            <SelectTrigger id="companySize">
-                                                <SelectValue placeholder="Select company size" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="1-10">1-10 employees</SelectItem>
-                                                <SelectItem value="11-50">11-50 employees</SelectItem>
-                                                <SelectItem value="51-200">51-200 employees</SelectItem>
-                                                <SelectItem value="201-500">201-500 employees</SelectItem>
-                                                <SelectItem value="501+">501+ employees</SelectItem>
-                                            </SelectContent>
-                                        </Select>
+                                    <div className="flex items-center space-x-2">
+                                        <RadioGroupItem value="sage_femme" id="sage_femme" />
+                                        <FormLabel htmlFor="sage_femme">Sage-femme</FormLabel>
                                     </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="industry">Industry</Label>
-                                        <Select value={formData.industry} onValueChange={(value) => updateFormData('industry', value)}>
-                                            <SelectTrigger id="industry">
-                                                <SelectValue placeholder="Select industry" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="technology">Technology</SelectItem>
-                                                <SelectItem value="healthcare">Healthcare</SelectItem>
-                                                <SelectItem value="finance">Finance</SelectItem>
-                                                <SelectItem value="education">Education</SelectItem>
-                                                <SelectItem value="other">Other</SelectItem>
-                                            </SelectContent>
-                                        </Select>
+                                    <div className="flex items-center space-x-2">
+                                        <RadioGroupItem value="secretaire" id="secretaire" />
+                                        <FormLabel htmlFor="secretaire">Secrétaire</FormLabel>
                                     </div>
-                                </>
-                            )}
-                        </CardContent>
-                        <CardFooter className="flex justify-between">
-                            <Button variant="outline" onClick={handlePrevious}>
-                                <ArrowLeft className="mr-2 h-4 w-4" /> Back
-                            </Button>
-                            <Button onClick={handleNext} disabled={!isStepValid()}>
-                                Next <ArrowRight className="ml-2 h-4 w-4" />
-                            </Button>
-                        </CardFooter>
+                                </RadioGroup>
+                                {errors.role && <p className="text-sm text-red-500">{errors.role}</p>}
+                            </div>
+                        )}
                     </div>
                 );
+
+            case 2:
+                // Informations spécifiques au rôle
+                if (data.role === 'sage_femme') {
+                    return (
+                        <div className="space-y-4">
+                            <h2 className="text-lg font-medium">Informations de la sage-femme</h2>
+
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                <div className="space-y-2">
+                                    <FormLabel htmlFor="matricule">Matricule</FormLabel>
+                                    <Input
+                                        id="matricule"
+                                        value={data.matricule}
+                                        onChange={(e) => setData('matricule', e.target.value)}
+                                        placeholder="Matricule"
+                                    />
+                                    {errors.matricule && <p className="text-sm text-red-500">{errors.matricule}</p>}
+                                </div>
+
+                                <div className="space-y-2">
+                                    <FormLabel htmlFor="grade">Grade</FormLabel>
+                                    <Select value={data.grade} onValueChange={(value) => setData('grade', value)}>
+                                        <SelectTrigger id="grade">
+                                            <SelectValue placeholder="Sélectionner" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="chef_de_service">Chef de service</SelectItem>
+                                            <SelectItem value="adjointe">Adjointe</SelectItem>
+                                            <SelectItem value="consultante">Consultante</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    {errors.grade && <p className="text-sm text-red-500">{errors.grade}</p>}
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <FormLabel htmlFor="specialite">Spécialité</FormLabel>
+                                <Select value={data.specialite} onValueChange={(value) => setData('specialite', value)}>
+                                    <SelectTrigger id="specialite">
+                                        <SelectValue placeholder="Sélectionner" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="obstétrique">Obstétrique</SelectItem>
+                                        <SelectItem value="gynécologie">Gynécologie</SelectItem>
+                                        <SelectItem value="néonatalogie">Néonatalogie</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                {errors.specialite && <p className="text-sm text-red-500">{errors.specialite}</p>}
+                            </div>
+
+                            <div className="space-y-2">
+                                <FormLabel htmlFor="numero_telephone">Numéro de téléphone</FormLabel>
+                                <Input
+                                    id="numero_telephone"
+                                    value={data.numero_telephone}
+                                    onChange={(e) => setData('numero_telephone', e.target.value)}
+                                    placeholder="Numéro de téléphone"
+                                />
+                                {errors.numero_telephone && <p className="text-sm text-red-500">{errors.numero_telephone}</p>}
+                            </div>
+                        </div>
+                    );
+                } else if (data.role === 'secretaire') {
+                    return (
+                        <div className="space-y-4">
+                            <h2 className="text-lg font-medium">Informations de la secrétaire</h2>
+
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                <div className="space-y-2">
+                                    <FormLabel htmlFor="matricule">Matricule</FormLabel>
+                                    <Input
+                                        id="matricule"
+                                        value={data.matricule}
+                                        onChange={(e) => setData('matricule', e.target.value)}
+                                        placeholder="Matricule"
+                                    />
+                                    {errors.matricule && <p className="text-sm text-red-500">{errors.matricule}</p>}
+                                </div>
+
+                                <div className="space-y-2">
+                                    <FormLabel htmlFor="grade">Grade</FormLabel>
+                                    <Select value={data.grade} onValueChange={(value) => setData('grade', value)}>
+                                        <SelectTrigger id="grade">
+                                            <SelectValue placeholder="Sélectionner" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="chef_de_service">Chef de service</SelectItem>
+                                            <SelectItem value="assistante">Assistante</SelectItem>
+                                            <SelectItem value="principale">Principale</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    {errors.grade && <p className="text-sm text-red-500">{errors.grade}</p>}
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <FormLabel htmlFor="numero_telephone">Numéro de téléphone</FormLabel>
+                                <Input
+                                    id="numero_telephone"
+                                    value={data.numero_telephone}
+                                    onChange={(e) => setData('numero_telephone', e.target.value)}
+                                    placeholder="Numéro de téléphone"
+                                />
+                                {errors.numero_telephone && <p className="text-sm text-red-500">{errors.numero_telephone}</p>}
+                            </div>
+                        </div>
+                    );
+                } else {
+                    // Pour les administrateurs, pas d'informations spécifiques supplémentaires
+                    return (
+                        <div className="space-y-4">
+                            <h2 className="text-lg font-medium">Informations de l'administrateur</h2>
+                            <p className="text-muted-foreground">Aucune information supplémentaire requise pour les administrateurs.</p>
+                        </div>
+                    );
+                }
+
             case 3:
                 return (
                     <div className="space-y-4">
-                        <CardHeader>
-                            <CardTitle>Step 3: Service Selection</CardTitle>
-                            <CardDescription>Based on your profile, here are the services we offer</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="space-y-2">
-                                <Label htmlFor="serviceType">Service Type</Label>
-                                <Select value={formData.serviceType} onValueChange={(value) => updateFormData('serviceType', value)}>
-                                    <SelectTrigger id="serviceType">
-                                        <SelectValue placeholder="Select service type" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {getServiceTypes().map((service) => (
-                                            <SelectItem key={service} value={service.toLowerCase().replace(/\s+/g, '-')}>
-                                                {service}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        </CardContent>
-                        <CardFooter className="flex justify-between">
-                            <Button variant="outline" onClick={handlePrevious}>
-                                <ArrowLeft className="mr-2 h-4 w-4" /> Back
-                            </Button>
-                            <Button onClick={handleNext} disabled={!isStepValid()}>
-                                Next <ArrowRight className="ml-2 h-4 w-4" />
-                            </Button>
-                        </CardFooter>
+                        <h2 className="text-lg font-medium">Adresse</h2>
+
+                        <div className="space-y-2">
+                            <FormLabel htmlFor="adresse">Adresse complète</FormLabel>
+                            <Input id="adresse" value={data.adresse} onChange={(e) => setData('adresse', e.target.value)} placeholder="Adresse" />
+                            {errors.adresse && <p className="text-sm text-red-500">{errors.adresse}</p>}
+                        </div>
                     </div>
                 );
+
             case 4:
-                return (
-                    <div className="space-y-4">
-                        <CardHeader>
-                            <CardTitle>Step 4: Additional Details</CardTitle>
-                            <CardDescription>Please provide some final details about your project</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="budget">Budget Range</Label>
-                                <Select value={formData.budget} onValueChange={(value) => updateFormData('budget', value)}>
-                                    <SelectTrigger id="budget">
-                                        <SelectValue placeholder="Select budget range" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="under-1000">Under $1,000</SelectItem>
-                                        <SelectItem value="1000-5000">$1,000 - $5,000</SelectItem>
-                                        <SelectItem value="5000-10000">$5,000 - $10,000</SelectItem>
-                                        <SelectItem value="10000-50000">$10,000 - $50,000</SelectItem>
-                                        <SelectItem value="over-50000">Over $50,000</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
+                // Étape mot de passe (uniquement en création)
+                if (!isEditing) {
+                    return (
+                        <div className="space-y-4">
+                            <h2 className="text-lg font-medium">Mot de passe</h2>
+                            <p className="text-muted-foreground">
+                                Un mot de passe sera generé automatiquement lors de la création de l'utilisateur. Ce sera a l'utilisateur de le
+                                modifier lors de sa première connexion.
+                            </p>
+                        </div>
+                    );
+                }
+                return null;
 
-                            <div className="space-y-2">
-                                <Label>Project Requirements</Label>
-                                <div className="space-y-2">
-                                    {getRequirementOptions().map((requirement) => (
-                                        <div key={requirement.id} className="flex items-center space-x-2">
-                                            <Checkbox
-                                                id={requirement.id}
-                                                checked={(formData.requirements || []).includes(requirement.id)}
-                                                onCheckedChange={(checked) => {
-                                                    const currentRequirements = formData.requirements || [];
-                                                    if (checked) {
-                                                        updateFormData('requirements', [...currentRequirements, requirement.id]);
-                                                    } else {
-                                                        updateFormData(
-                                                            'requirements',
-                                                            currentRequirements.filter((id) => id !== requirement.id),
-                                                        );
-                                                    }
-                                                }}
-                                            />
-                                            <Label htmlFor={requirement.id}>{requirement.label}</Label>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="contactPreference">Preferred Contact Method</Label>
-                                <Select value={formData.contactPreference} onValueChange={(value) => updateFormData('contactPreference', value)}>
-                                    <SelectTrigger id="contactPreference">
-                                        <SelectValue placeholder="Select contact preference" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="email">Email</SelectItem>
-                                        <SelectItem value="phone">Phone</SelectItem>
-                                        <SelectItem value="video-call">Video Call</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        </CardContent>
-                        <CardFooter className="flex justify-between">
-                            <Button variant="outline" onClick={handlePrevious}>
-                                <ArrowLeft className="mr-2 h-4 w-4" /> Back
-                            </Button>
-                            <Button onClick={handleSubmit} disabled={!isStepValid()}>
-                                Submit
-                            </Button>
-                        </CardFooter>
-                    </div>
-                );
-            case 5:
-                return (
-                    <div className="space-y-4 text-center">
-                        <CardHeader>
-                            <CardTitle>Thank You!</CardTitle>
-                            <CardDescription>Your submission has been received</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="mb-4 flex justify-center">
-                                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
-                                    <Check className="h-8 w-8 text-green-600" />
-                                </div>
-                            </div>
-                            <p>We'll be in touch with you shortly via your preferred contact method.</p>
-                        </CardContent>
-                    </div>
-                );
+            default:
+                return null;
         }
     };
-
-    // Get requirement options based on service type
-    const getRequirementOptions = () => {
-        const baseOptions = [
-            { id: 'urgent', label: 'Urgent delivery' },
-            { id: 'support', label: 'Ongoing support' },
-        ];
-
-        if (!formData.serviceType) return baseOptions;
-
-        if (formData.userType === 'individual') {
-            return [...baseOptions, { id: 'one-on-one', label: 'One-on-one sessions' }, { id: 'materials', label: 'Written materials' }];
-        } else {
-            if (formData.serviceType.includes('software') || formData.serviceType.includes('it')) {
-                return [
-                    ...baseOptions,
-                    { id: 'integration', label: 'System integration' },
-                    { id: 'training', label: 'Staff training' },
-                    { id: 'maintenance', label: 'Maintenance plan' },
-                ];
-            } else if (formData.serviceType.includes('medical') || formData.serviceType.includes('healthcare')) {
-                return [
-                    ...baseOptions,
-                    { id: 'compliance', label: 'HIPAA compliance' },
-                    { id: 'data-migration', label: 'Data migration' },
-                    { id: 'training', label: 'Staff training' },
-                ];
-            } else {
-                return [
-                    ...baseOptions,
-                    { id: 'report', label: 'Detailed reporting' },
-                    { id: 'presentation', label: 'Executive presentation' },
-                    { id: 'consultation', label: 'Regular consultation' },
-                ];
-            }
-        }
-    };
-
-    // Calculate progress percentage
-    const progress = Math.min(((step - 1) / 4) * 100, 100);
 
     return (
-        <Card className="w-full">
-            {step < 5 && (
-                <div className="px-6 pt-6">
-                    <div className="relative h-2 w-full overflow-hidden rounded-full bg-gray-100">
-                        <div className="bg-primary absolute h-full transition-all duration-300 ease-in-out" style={{ width: `${progress}%` }}></div>
+        <div className="space-y-6">
+            <div className="relative h-2 w-full overflow-hidden rounded-full bg-gray-100">
+                <div className="bg-primary absolute h-full transition-all duration-300 ease-in-out" style={{ width: `${progress}%` }}></div>
+            </div>
+            <div className="text-muted-foreground flex justify-between text-sm">
+                <span>
+                    Étape {step} sur {totalSteps}
+                </span>
+                <span>{Math.round(progress)}% complété</span>
+            </div>
+
+            <form onSubmit={handleSubmit}>
+                <Card className="p-6">
+                    {renderStep()}
+
+                    <div className="mt-6 flex justify-between">
+                        {step > 1 ? (
+                            <Button type="button" variant="outline" onClick={handlePrevious}>
+                                <ArrowLeft className="mr-2 h-4 w-4" /> Précédent
+                            </Button>
+                        ) : (
+                            <div></div>
+                        )}
+
+                        <Button type="submit" disabled={processing || !isStepValid()}>
+                            {step < totalSteps ? (
+                                <>
+                                    Suivant <ArrowRight className="ml-2 h-4 w-4" />
+                                </>
+                            ) : isEditing ? (
+                                'Mettre à jour'
+                            ) : (
+                                "Créer l'utilisateur"
+                            )}
+                        </Button>
                     </div>
-                    <div className="mt-2 text-sm text-gray-500">Step {step} of 4</div>
-                </div>
-            )}
-            {renderStep()}
-        </Card>
+                </Card>
+            </form>
+        </div>
     );
 }

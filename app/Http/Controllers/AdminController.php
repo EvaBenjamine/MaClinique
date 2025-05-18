@@ -77,12 +77,15 @@ class AdminController extends Controller
                         'grade' => $user->secretaire ? $user->secretaire->grade : null,
                     ];
                 });
+
+            $users = User::all();
         }
 
         return Inertia::render('admin/index', [
             'admins' => $admins,
             'sageFemmes' => $sageFemmes,
             'secretaires' => $secretaires,
+            'users' => $users,
         ]);
     }
 
@@ -101,7 +104,7 @@ class AdminController extends Controller
             'nom' => 'required|string|max:255',
             'prenom' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
+            //'password' => 'required|string|min:8|confirmed',
             'numero_telephone' => 'nullable|string|max:20',
             'adresse' => 'nullable|string|max:255',
         ]);
@@ -111,15 +114,8 @@ class AdminController extends Controller
             'nom' => $validated['nom'],
             'prenom' => $validated['prenom'],
             'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
+            'password' => Hash::make('password'), // Mot de passe par défaut
             'role' => 'admin',
-        ]);
-
-        // Créer le profil admin
-        $admin = Admin::create([
-            'user_id' => $user->id,
-            'numero_telephone' => $validated['numero_telephone'] ?? null,
-            'adresse' => $validated['adresse'] ?? null,
         ]);
 
         return redirect()->route('users.index')->with('success', 'Administrateur créé avec succès.');
@@ -140,7 +136,7 @@ class AdminController extends Controller
             'nom' => 'required|string|max:255',
             'prenom' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
+            //'password' => 'required|string|min:8|confirmed',
             'matricule' => 'required|string|max:50|unique:sage_femmes',
             'grade' => 'required|string|max:100',
             'specialite' => 'nullable|string|max:100',
@@ -153,7 +149,8 @@ class AdminController extends Controller
             'nom' => $validated['nom'],
             'prenom' => $validated['prenom'],
             'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
+            'password' => Hash::make('password'), // Mot de passe par défaut
+            //'password' => Hash::make($validated['password']),
             'role' => 'sage_femme',
         ]);
 
@@ -185,7 +182,7 @@ class AdminController extends Controller
             'nom' => 'required|string|max:255',
             'prenom' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
+            //'password' => 'required|string|min:8|confirmed',
             'matricule' => 'required|string|max:50|unique:secretaires',
             'grade' => 'required|string|max:100',
             'numero_telephone' => 'nullable|string|max:20',
@@ -197,7 +194,8 @@ class AdminController extends Controller
             'nom' => $validated['nom'],
             'prenom' => $validated['prenom'],
             'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
+            'password' => Hash::make('password'), // Mot de passe par défaut]),
+            //'password' => Hash::make($validated['password']),
             'role' => 'secretaire',
         ]);
 
@@ -211,6 +209,48 @@ class AdminController extends Controller
         ]);
 
         return redirect()->route('users.index')->with('success', 'Secrétaire créé avec succès.');
+    }
+
+    /**
+     * Éditer un utilisateur
+     */
+    public function edit($id)
+    {
+        $user = User::findOrFail($id);
+        $userData = [
+            'id' => $user->id,
+            'nom' => $user->nom,
+            'prenom' => $user->prenom,
+            'email' => $user->email,
+            'role' => $user->role,
+        ];
+        // Ajouter les données spécifiques au rôle
+        switch ($user->role) {
+            case 'sage_femme':
+                $sageFemme = $user->sageFemme;
+                if ($sageFemme) {
+                    $userData['matricule'] = $sageFemme->matricule;
+                    $userData['grade'] = $sageFemme->grade;
+                    $userData['specialite'] = $sageFemme->specialite;
+                    $userData['numero_telephone'] = $sageFemme->numero_telephone;
+                    $userData['adresse'] = $sageFemme->adresse;
+                }
+                break;
+
+            case 'secretaire':
+                $secretaire = $user->secretaire;
+                if ($secretaire) {
+                    $userData['matricule'] = $secretaire->matricule;
+                    $userData['grade'] = $secretaire->grade;
+                    $userData['numero_telephone'] = $secretaire->numero_telephone;
+                    $userData['adresse'] = $secretaire->adresse;
+                }
+                break;
+        }
+
+        return response()->json([
+            'userDetails' => $userData,
+        ]);
     }
 
     /**
@@ -274,4 +314,5 @@ class AdminController extends Controller
             'user' => $userData,
         ]);
     }
+
 }

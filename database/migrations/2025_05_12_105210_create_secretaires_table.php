@@ -15,7 +15,7 @@ return new class extends Migration
                 ->cascadeOnDelete()
                 ->unique(); // Relation unique avec User
             $table->string('matricule')->unique(); // Matricule unique (facultatif selon besoin)
-            $table->enum('grade', ['junior', 'senior', 'chef']);
+            $table->enum('grade', ['chef_de_service', 'assistante', 'principale']); // Ex: chef de service, chef
             $table->string('numero_telephone', 20)->nullable();
             $table->text('adresse')->nullable();
             $table->timestamps();
