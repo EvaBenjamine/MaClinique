@@ -315,4 +315,85 @@ class AdminController extends Controller
         ]);
     }
 
+    public function update($id, Request $request){
+        $user = User::findOrFail($id);
+        $role = $user->role;
+        if ($role == 'admin'){
+            $validated = $request->validate([
+                'nom' => 'required|string|max:255',
+                'prenom' => 'required|string|max:255',
+                'email' => 'required|string|email|max:255|unique:users',
+                //'password' => 'required|string|min:8|confirmed',
+                'numero_telephone' => 'nullable|string|max:20',
+                'adresse' => 'nullable|string|max:255',
+            ]);
+            $user->update([
+                'nom' => $validated['nom'],
+                'prenom' => $validated['prenom'],
+                'email' => $validated['email'],
+                'password' => Hash::make('password'), // Mot de passe par défaut
+                //'password' => Hash::make($validated['password']),
+                'role' => $role,
+            ]);
+        }
+        else if ($role == 'sage_femme'){
+            $validated = $request->validate([
+                'nom' => 'required|string|max:255',
+                'prenom' => 'required|string|max:255',
+                'email' => 'required|string|email|max:255|unique:users',
+                //'password' => 'required|string|min:8|confirmed',
+                'matricule' => 'required|string|max:50|unique:sage_femmes',
+                'grade' => 'required|string|max:100',
+                'specialite' => 'nullable|string|max:100',
+                'numero_telephone' => 'nullable|string|max:20',
+                'adresse' => 'nullable|string|max:255',
+            ]);
+            $user->update([
+                'nom' => $validated['nom'],
+                'prenom' => $validated['prenom'],
+                'email' => $validated['email'],
+                'password' => Hash::make('password'), // Mot de passe par défaut
+                //'password' => Hash::make($validated['password']),
+                'role' => $role,
+            ]);
+            $sageFemme = SageFemme::find($id);
+            $sageFemme->update([
+                'matricule' => $validated['matricule'],
+                'grade' => $validated['grade'],
+                'specialite' => $validated['specialite'] ?? null,
+                'numero_telephone' => $validated['numero_telephone'] ?? null,
+                'adresse' => $validated['adresse'] ?? null,
+            ]);
+        }
+        else if ($role == 'secretaire'){
+            $validated = $request->validate([
+                'nom' => 'required|string|max:255',
+                'prenom' => 'required|string|max:255',
+                'email' => 'required|string|email|max:255|unique:users',
+                //'password' => 'required|string|min:8|confirmed',
+                'matricule' => 'required|string|max:50|unique:secretaires',
+                'grade' => 'required|string|max:100',
+                'numero_telephone' => 'nullable|string|max:20',
+                'adresse' => 'nullable|string|max:255',
+            ]);
+            $user->update([
+                'nom' => $validated['nom'],
+                'prenom' => $validated['prenom'],
+                'email' => $validated['email'],
+                'password' => Hash::make('password'), // Mot de passe par défaut
+                //'password' => Hash::make($validated['password']),
+                'role' => $role,
+            ]);
+            $secretaire = Secretaire::find($id);
+            $secretaire->update([
+                'matricule' => $validated['matricule'],
+                'grade' => $validated['grade'],
+                'numero_telephone' => $validated['numero_telephone'] ?? null,
+                'adresse' => $validated['adresse'] ?? null,
+            ]);
+        }
+
+        return redirect()->route('users.index')->with('success', 'Utilisateur modifié avec succès.');
+    }
+
 }

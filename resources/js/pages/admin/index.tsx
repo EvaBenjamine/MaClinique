@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import UserDetailModal from '@/components/users/UserDetailModal';
 import type { User, UserDetails } from '@/types/models';
 import axios from 'axios';
 
@@ -43,7 +44,6 @@ export default function UsersIndex() {
         { id: 'admin', label: 'Administrateurs' },
         { id: 'sage_femme', label: 'Sages-femmes' },
         { id: 'secretaire', label: 'Secrétaires' },
-        { id: 'patiente', label: 'Patientes' },
     ];
 
     // Effect pour filtrer les utilisateurs quand les filtres ou la recherche changent
@@ -175,7 +175,7 @@ export default function UsersIndex() {
 
     return (
         <Sidebar>
-            <Head title="Gestion des utilisateurs" />
+            <Head title="Utilisateurs" />
 
             <div className="py-6">
                 <div className="mx-auto max-w-7xl">
@@ -389,13 +389,13 @@ export default function UsersIndex() {
                 <DialogContent className="max-w-3xl">
                     <DialogHeader>
                         <DialogTitle className="text-xl font-bold">
-                            Créer un nouveau{' '}
+                            Créer{' '}
                             {selectedUserType === 'admin'
-                                ? 'administrateur'
+                                ? 'nouvel administrateur'
                                 : selectedUserType === 'sage_femme'
-                                  ? 'sage-femme'
+                                  ? ' une nouvelle sage-femme'
                                   : selectedUserType === 'secretaire'
-                                    ? 'secrétaire'
+                                    ? ' une nouvelle secrétaire'
                                     : 'utilisateur'}
                         </DialogTitle>
                     </DialogHeader>
@@ -403,92 +403,18 @@ export default function UsersIndex() {
                 </DialogContent>
             </Dialog>
 
-            {/* Dialog pour voir les détails d'un utilisateur */}
-            <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle className="text-xl font-bold">Détails de l'utilisateur</DialogTitle>
-                    </DialogHeader>
-                    {selectedUser && (
-                        <div className="space-y-6">
-                            <div className="flex justify-center">
-                                <Avatar className={`h-24 w-24 ${getAvatarStyles(selectedUser.role)} border-4 border-white shadow-md`}>
-                                    <AvatarFallback className="text-2xl">{getInitials(selectedUser.nom, selectedUser.prenom)}</AvatarFallback>
-                                </Avatar>
-                            </div>
-
-                            <div className="grid gap-4">
-                                <div className="rounded-lg bg-gray-50 p-4">
-                                    <h3 className="mb-1 text-sm font-medium text-gray-500">Nom complet</h3>
-                                    <p className="text-base font-medium">
-                                        {selectedUser.prenom} {selectedUser.nom}
-                                    </p>
-                                </div>
-                                <div className="rounded-lg bg-gray-50 p-4">
-                                    <h3 className="mb-1 text-sm font-medium text-gray-500">Email</h3>
-                                    <p className="text-base">{selectedUser.email}</p>
-                                </div>
-                                <div className="rounded-lg bg-gray-50 p-4">
-                                    <h3 className="mb-1 text-sm font-medium text-gray-500">Rôle</h3>
-                                    <Badge className={`${getRoleBadgeStyles(selectedUser.role)} mt-1`}>{getRoleLabel(selectedUser.role)}</Badge>
-                                </div>
-
-                                {selectedUserDetails && selectedUser.role === 'sage_femme' && (
-                                    <div className="mt-2 grid grid-cols-1 gap-4 md:grid-cols-2">
-                                        <div className="rounded-lg bg-gray-50 p-4">
-                                            <h3 className="mb-1 text-sm font-medium text-gray-500">Matricule</h3>
-                                            <p className="text-base">{selectedUserDetails.matricule || 'Non spécifié'}</p>
-                                        </div>
-                                        <div className="rounded-lg bg-gray-50 p-4">
-                                            <h3 className="mb-1 text-sm font-medium text-gray-500">Grade</h3>
-                                            <p className="text-base">{selectedUserDetails.grade || 'Non spécifié'}</p>
-                                        </div>
-                                        <div className="rounded-lg bg-gray-50 p-4">
-                                            <h3 className="mb-1 text-sm font-medium text-gray-500">Spécialité</h3>
-                                            <p className="text-base">{selectedUserDetails.specialite || 'Non spécifié'}</p>
-                                        </div>
-                                        <div className="rounded-lg bg-gray-50 p-4">
-                                            <h3 className="mb-1 text-sm font-medium text-gray-500">Téléphone</h3>
-                                            <p className="text-base">{selectedUserDetails.numero_telephone || 'Non spécifié'}</p>
-                                        </div>
-                                        <div className="rounded-lg bg-gray-50 p-4 md:col-span-2">
-                                            <h3 className="mb-1 text-sm font-medium text-gray-500">Adresse</h3>
-                                            <p className="text-base">{selectedUserDetails.adresse || 'Non spécifié'}</p>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {selectedUserDetails && selectedUser.role === 'secretaire' && (
-                                    <div className="mt-2 grid grid-cols-1 gap-4 md:grid-cols-2">
-                                        <div className="rounded-lg bg-gray-50 p-4">
-                                            <h3 className="mb-1 text-sm font-medium text-gray-500">Matricule</h3>
-                                            <p className="text-base">{selectedUserDetails.matricule || 'Non spécifié'}</p>
-                                        </div>
-                                        <div className="rounded-lg bg-gray-50 p-4">
-                                            <h3 className="mb-1 text-sm font-medium text-gray-500">Grade</h3>
-                                            <p className="text-base">{selectedUserDetails.grade || 'Non spécifié'}</p>
-                                        </div>
-                                        <div className="rounded-lg bg-gray-50 p-4">
-                                            <h3 className="mb-1 text-sm font-medium text-gray-500">Téléphone</h3>
-                                            <p className="text-base">{selectedUserDetails.numero_telephone || 'Non spécifié'}</p>
-                                        </div>
-                                        <div className="rounded-lg bg-gray-50 p-4 md:col-span-2">
-                                            <h3 className="mb-1 text-sm font-medium text-gray-500">Adresse</h3>
-                                            <p className="text-base">{selectedUserDetails.adresse || 'Non spécifié'}</p>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    )}
-                </DialogContent>
-            </Dialog>
+            <UserDetailModal
+                isOpen={isViewDialogOpen}
+                onClose={() => setIsViewDialogOpen(false)}
+                selectedUser={selectedUser}
+                selectedUserDetails={selectedUserDetails}
+            />
 
             {/* Dialog pour modifier un utilisateur */}
             <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
                 <DialogContent className="max-w-3xl">
                     <DialogHeader>
-                        <DialogTitle className="text-xl font-bold">Modifier l'utilisateur</DialogTitle>
+                        <DialogTitle className="text-xl font-bold text-pink-600">Modifier l'utilisateur</DialogTitle>
                     </DialogHeader>
                     {selectedUser && selectedUserDetails && (
                         <UserMultiStepForm

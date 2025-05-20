@@ -1,6 +1,5 @@
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { User, UserDetails } from '@/types/models';
 import { useForm } from '@inertiajs/react';
@@ -59,8 +58,8 @@ export default function UserMultiStepForm({
         prenom: userData?.prenom || '',
         email: userData?.email || '',
         role: userType || '',
-        //password: '',
-        //password_confirmation: '',
+        password: '',
+        password_confirmation: '',
 
         // Données spécifiques pour sage-femme et secrétaire
         matricule: userDetails?.matricule || '',
@@ -165,52 +164,69 @@ export default function UserMultiStepForm({
         switch (step) {
             case 1:
                 return (
-                    <div className="space-y-4">
-                        <h2 className="text-lg font-medium">Informations de base</h2>
+                    <div className="space-y-6">
+                        <h2 className="text-lg font-semibold text-pink-700">Informations de base</h2>
 
                         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <div className="space-y-2">
-                                <FormLabel htmlFor="prenom">Prénom</FormLabel>
-                                <Input id="prenom" value={data.prenom} onChange={(e) => setData('prenom', e.target.value)} placeholder="Prénom" />
+                                <FormLabel className="text-pink-800" htmlFor="prenom">
+                                    Prénom
+                                </FormLabel>
+                                <Input
+                                    id="prenom"
+                                    value={data.prenom}
+                                    onChange={(e) => setData('prenom', e.target.value)}
+                                    placeholder="Prénom"
+                                    className="rounded-xl border-pink-300 focus:ring-pink-500"
+                                />
                                 {errors.prenom && <p className="text-sm text-red-500">{errors.prenom}</p>}
                             </div>
 
                             <div className="space-y-2">
-                                <FormLabel htmlFor="nom">Nom</FormLabel>
-                                <Input id="nom" value={data.nom} onChange={(e) => setData('nom', e.target.value)} placeholder="Nom" />
+                                <FormLabel className="text-pink-800" htmlFor="nom">
+                                    Nom
+                                </FormLabel>
+                                <Input
+                                    id="nom"
+                                    value={data.nom}
+                                    onChange={(e) => setData('nom', e.target.value)}
+                                    placeholder="Nom"
+                                    className="rounded-xl border-pink-300 focus:ring-pink-500"
+                                />
                                 {errors.nom && <p className="text-sm text-red-500">{errors.nom}</p>}
                             </div>
                         </div>
 
                         <div className="space-y-2">
-                            <FormLabel htmlFor="email">Email</FormLabel>
+                            <FormLabel className="text-pink-800" htmlFor="email">
+                                Email
+                            </FormLabel>
                             <Input
                                 id="email"
                                 type="email"
                                 value={data.email}
                                 onChange={(e) => setData('email', e.target.value)}
                                 placeholder="email@example.com"
+                                className="rounded-xl border-pink-300 focus:ring-pink-500"
                             />
                             {errors.email && <p className="text-sm text-red-500">{errors.email}</p>}
                         </div>
 
                         {isCreating && (
                             <div className="space-y-2">
-                                <FormLabel>Role de l'utilisateur</FormLabel>
-                                <RadioGroup value={data.role} onValueChange={(value) => setData('role', value)} className="space-y-3">
-                                    <div className="flex items-center space-x-2">
-                                        <RadioGroupItem value="admin" id="admin" />
-                                        <FormLabel htmlFor="admin">Administrateur</FormLabel>
-                                    </div>
-                                    <div className="flex items-center space-x-2">
-                                        <RadioGroupItem value="sage_femme" id="sage_femme" />
-                                        <FormLabel htmlFor="sage_femme">Sage-femme</FormLabel>
-                                    </div>
-                                    <div className="flex items-center space-x-2">
-                                        <RadioGroupItem value="secretaire" id="secretaire" />
-                                        <FormLabel htmlFor="secretaire">Secrétaire</FormLabel>
-                                    </div>
-                                </RadioGroup>
+                                <FormLabel className="text-pink-800" htmlFor="role">
+                                    Rôle
+                                </FormLabel>
+                                <Select value={data.role} onValueChange={(value) => setData('role', value)}>
+                                    <SelectTrigger id="role" className="rounded-xl border-pink-300 focus:ring-pink-500">
+                                        <SelectValue placeholder="Sélectionner" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="admin">Administrateur</SelectItem>
+                                        <SelectItem value="sage_femme">Sage-femme</SelectItem>
+                                        <SelectItem value="secretaire">Secrétaire</SelectItem>
+                                    </SelectContent>
+                                </Select>
                                 {errors.role && <p className="text-sm text-red-500">{errors.role}</p>}
                             </div>
                         )}
@@ -218,28 +234,32 @@ export default function UserMultiStepForm({
                 );
 
             case 2:
-                // Informations spécifiques au rôle
                 if (data.role === 'sage_femme') {
                     return (
-                        <div className="space-y-4">
-                            <h2 className="text-lg font-medium">Informations de la sage-femme</h2>
+                        <div className="space-y-6">
+                            <h2 className="text-lg font-semibold text-pink-700">Informations de la sage-femme</h2>
 
                             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                 <div className="space-y-2">
-                                    <FormLabel htmlFor="matricule">Matricule</FormLabel>
+                                    <FormLabel className="text-pink-800" htmlFor="matricule">
+                                        Matricule
+                                    </FormLabel>
                                     <Input
                                         id="matricule"
                                         value={data.matricule}
                                         onChange={(e) => setData('matricule', e.target.value)}
                                         placeholder="Matricule"
+                                        className="rounded-xl border-pink-300 focus:ring-pink-500"
                                     />
                                     {errors.matricule && <p className="text-sm text-red-500">{errors.matricule}</p>}
                                 </div>
 
                                 <div className="space-y-2">
-                                    <FormLabel htmlFor="grade">Grade</FormLabel>
+                                    <FormLabel className="text-pink-800" htmlFor="grade">
+                                        Grade
+                                    </FormLabel>
                                     <Select value={data.grade} onValueChange={(value) => setData('grade', value)}>
-                                        <SelectTrigger id="grade">
+                                        <SelectTrigger id="grade" className="rounded-xl border-pink-300 focus:ring-pink-500">
                                             <SelectValue placeholder="Sélectionner" />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -253,9 +273,11 @@ export default function UserMultiStepForm({
                             </div>
 
                             <div className="space-y-2">
-                                <FormLabel htmlFor="specialite">Spécialité</FormLabel>
+                                <FormLabel className="text-pink-800" htmlFor="specialite">
+                                    Spécialité
+                                </FormLabel>
                                 <Select value={data.specialite} onValueChange={(value) => setData('specialite', value)}>
-                                    <SelectTrigger id="specialite">
+                                    <SelectTrigger id="specialite" className="rounded-xl border-pink-300 focus:ring-pink-500">
                                         <SelectValue placeholder="Sélectionner" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -268,12 +290,15 @@ export default function UserMultiStepForm({
                             </div>
 
                             <div className="space-y-2">
-                                <FormLabel htmlFor="numero_telephone">Numéro de téléphone</FormLabel>
+                                <FormLabel className="text-pink-800" htmlFor="numero_telephone">
+                                    Numéro de téléphone
+                                </FormLabel>
                                 <Input
                                     id="numero_telephone"
                                     value={data.numero_telephone}
                                     onChange={(e) => setData('numero_telephone', e.target.value)}
                                     placeholder="Numéro de téléphone"
+                                    className="rounded-xl border-pink-300 focus:ring-pink-500"
                                 />
                                 {errors.numero_telephone && <p className="text-sm text-red-500">{errors.numero_telephone}</p>}
                             </div>
@@ -281,25 +306,30 @@ export default function UserMultiStepForm({
                     );
                 } else if (data.role === 'secretaire') {
                     return (
-                        <div className="space-y-4">
-                            <h2 className="text-lg font-medium">Informations de la secrétaire</h2>
+                        <div className="space-y-6">
+                            <h2 className="text-lg font-semibold text-pink-700">Informations de la secrétaire</h2>
 
                             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                 <div className="space-y-2">
-                                    <FormLabel htmlFor="matricule">Matricule</FormLabel>
+                                    <FormLabel className="text-pink-800" htmlFor="matricule">
+                                        Matricule
+                                    </FormLabel>
                                     <Input
                                         id="matricule"
                                         value={data.matricule}
                                         onChange={(e) => setData('matricule', e.target.value)}
                                         placeholder="Matricule"
+                                        className="rounded-xl border-pink-300 focus:ring-pink-500"
                                     />
                                     {errors.matricule && <p className="text-sm text-red-500">{errors.matricule}</p>}
                                 </div>
 
                                 <div className="space-y-2">
-                                    <FormLabel htmlFor="grade">Grade</FormLabel>
+                                    <FormLabel className="text-pink-800" htmlFor="grade">
+                                        Grade
+                                    </FormLabel>
                                     <Select value={data.grade} onValueChange={(value) => setData('grade', value)}>
-                                        <SelectTrigger id="grade">
+                                        <SelectTrigger id="grade" className="rounded-xl border-pink-300 focus:ring-pink-500">
                                             <SelectValue placeholder="Sélectionner" />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -313,23 +343,25 @@ export default function UserMultiStepForm({
                             </div>
 
                             <div className="space-y-2">
-                                <FormLabel htmlFor="numero_telephone">Numéro de téléphone</FormLabel>
+                                <FormLabel className="text-pink-800" htmlFor="numero_telephone">
+                                    Numéro de téléphone
+                                </FormLabel>
                                 <Input
                                     id="numero_telephone"
                                     value={data.numero_telephone}
                                     onChange={(e) => setData('numero_telephone', e.target.value)}
                                     placeholder="Numéro de téléphone"
+                                    className="rounded-xl border-pink-300 focus:ring-pink-500"
                                 />
                                 {errors.numero_telephone && <p className="text-sm text-red-500">{errors.numero_telephone}</p>}
                             </div>
                         </div>
                     );
                 } else {
-                    // Pour les administrateurs, pas d'informations spécifiques supplémentaires
                     return (
                         <div className="space-y-4">
-                            <h2 className="text-lg font-medium">Informations de l'administrateur</h2>
-                            <p className="text-muted-foreground">Aucune information supplémentaire requise pour les administrateurs.</p>
+                            <h2 className="text-lg font-semibold text-pink-700">Informations de l'administrateur</h2>
+                            <p className="text-sm text-gray-600">Aucune information supplémentaire requise pour les administrateurs.</p>
                         </div>
                     );
                 }
@@ -337,30 +369,45 @@ export default function UserMultiStepForm({
             case 3:
                 return (
                     <div className="space-y-4">
-                        <h2 className="text-lg font-medium">Adresse</h2>
+                        <h2 className="text-lg font-semibold text-pink-700">Adresse</h2>
 
                         <div className="space-y-2">
-                            <FormLabel htmlFor="adresse">Adresse complète</FormLabel>
-                            <Input id="adresse" value={data.adresse} onChange={(e) => setData('adresse', e.target.value)} placeholder="Adresse" />
+                            <FormLabel className="text-pink-800" htmlFor="adresse">
+                                Adresse complète
+                            </FormLabel>
+                            <Input
+                                id="adresse"
+                                value={data.adresse}
+                                onChange={(e) => setData('adresse', e.target.value)}
+                                placeholder="Adresse"
+                                className="rounded-xl border-pink-300 focus:ring-pink-500"
+                            />
                             {errors.adresse && <p className="text-sm text-red-500">{errors.adresse}</p>}
                         </div>
                     </div>
                 );
 
             case 4:
-                // Étape mot de passe (uniquement en création)
                 if (!isEditing) {
                     return (
                         <div className="space-y-4">
-                            <h2 className="text-lg font-medium">Mot de passe</h2>
-                            <p className="text-muted-foreground">
-                                Un mot de passe sera generé automatiquement lors de la création de l'utilisateur. Ce sera a l'utilisateur de le
-                                modifier lors de sa première connexion.
+                            <h2 className="text-lg font-semibold text-pink-700">Mot de passe</h2>
+                            <p className="text-sm text-gray-600">
+                                Le mot de passe par defaut est <span className="font-bold">password</span>.Il sera généré automatiquement lors de la
+                                création de l'utilisateur et ce sera à l'utilisateur de le modifier lors de sa première connexion.
+                            </p>
+                        </div>
+                    );
+                } else {
+                    return (
+                        <div className="space-y-4">
+                            <h2 className="text-lg font-semibold text-pink-700">Mot de passe</h2>
+                            <p className="text-sm text-gray-600">
+                                Le mot de passe par defaut est <span className="font-bold">password</span> sera utilise comme nouveau mot de passe.
                             </p>
                         </div>
                     );
                 }
-                return null;
 
             default:
                 return null;
@@ -369,10 +416,11 @@ export default function UserMultiStepForm({
 
     return (
         <div className="space-y-6">
-            <div className="relative h-2 w-full overflow-hidden rounded-full bg-gray-100">
-                <div className="bg-primary absolute h-full transition-all duration-300 ease-in-out" style={{ width: `${progress}%` }}></div>
+            {/* Barre de progression */}
+            <div className="relative h-2 w-full overflow-hidden rounded-full bg-pink-100 shadow-inner">
+                <div className="absolute h-full bg-pink-500 transition-all duration-300 ease-in-out" style={{ width: `${progress}%` }} />
             </div>
-            <div className="text-muted-foreground flex justify-between text-sm">
+            <div className="flex justify-between text-sm text-pink-700">
                 <span>
                     Étape {step} sur {totalSteps}
                 </span>
@@ -380,19 +428,29 @@ export default function UserMultiStepForm({
             </div>
 
             <form onSubmit={handleSubmit}>
-                <Card className="p-6">
+                <Card className="rounded-2xl border-0 bg-white p-6 shadow-xl">
                     {renderStep()}
 
                     <div className="mt-6 flex justify-between">
                         {step > 1 ? (
-                            <Button type="button" variant="outline" onClick={handlePrevious}>
-                                <ArrowLeft className="mr-2 h-4 w-4" /> Précédent
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={handlePrevious}
+                                className="rounded-xl border-pink-400 text-pink-600 hover:bg-pink-100"
+                            >
+                                <ArrowLeft className="mr-2 h-4 w-4" />
+                                Précédent
                             </Button>
                         ) : (
-                            <div></div>
+                            <div />
                         )}
 
-                        <Button type="submit" disabled={processing || !isStepValid()}>
+                        <Button
+                            type="submit"
+                            disabled={processing || !isStepValid()}
+                            className="rounded-xl bg-pink-600 text-white shadow hover:bg-pink-700"
+                        >
                             {step < totalSteps ? (
                                 <>
                                     Suivant <ArrowRight className="ml-2 h-4 w-4" />
