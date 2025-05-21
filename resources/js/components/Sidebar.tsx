@@ -1,141 +1,120 @@
-import { Disclosure } from '@headlessui/react';
-import {
-  ChevronDown,
-  LayoutDashboard,
-  Users,
-  Stethoscope,
-  FileText,
-} from 'lucide-react';
+'use client';
+
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Inertia } from '@inertiajs/inertia';
+import { Link, usePage } from '@inertiajs/react';
+import { FileText, LayoutDashboard, LogOut, Stethoscope, User, Users } from 'lucide-react';
 
 interface SidebarProps {
-  children: React.ReactNode;
+    children: React.ReactNode;
 }
 
 export default function Sidebar({ children }: SidebarProps) {
-  return (
-    <div className="flex min-h-screen bg-pink-100">
-      {/* Sidebar */}
-      <aside className="w-72 bg-gradient-to-b from-pink-300 to-violet-500 text-white p-6 shadow-2xl rounded-r-3xl">
-        <div className="mb-10">
-          <h1 className="text-4xl font-bold text-center tracking-wide font-serif">
-            💖 MaClinique
-          </h1>
+    const { url, props } = usePage();
+    const user = props.auth?.user;
+
+    const isActive = (path: string) => url.startsWith(path);
+
+    const linkClass = (path: string) =>
+        `flex items-center gap-3 px-4 py-2 rounded-lg transition font-medium ${
+            isActive(path) ? 'bg-pink-600 shadow-inner text-white' : 'text-pink-100 hover:bg-pink-500 hover:text-white'
+        }`;
+
+    const handleLogout = () => {
+        Inertia.post('/logout');
+    };
+
+    const getInitials = (nom: string, prenom: string): string => {
+        return `${prenom.charAt(0)}${nom.charAt(0)}`.toUpperCase();
+    };
+
+    return (
+        <div className="flex h-screen overflow-hidden bg-pink-50">
+            {/* Sidebar */}
+            <aside className="flex h-full w-72 flex-col justify-between rounded-r-3xl bg-gradient-to-b from-pink-400 to-pink-600 p-6 text-pink-100 shadow-2xl">
+                <div>
+                    {/* Logo */}
+                    <div className="mb-8 flex flex-col items-center gap-2 text-white">
+                        <img src="/logo.jpg" alt="MaClinique Logo" width={200} height={200} className="rounded-lg" />
+                    </div>
+
+                    {/* Navigation */}
+                    <nav className="space-y-2">
+                        <Link href="/dashboard" className={linkClass('/dashboard')}>
+                            <LayoutDashboard size={20} />
+                            Dashboard
+                        </Link>
+
+                        <Link href="/patientes/liste" className={linkClass('/patientes')}>
+                            <Users size={20} />
+                            Patientes
+                        </Link>
+
+                        <Link href="/consultations/prenatales" className={linkClass('/consultations')}>
+                            <Stethoscope size={20} />
+                            Consultations
+                        </Link>
+
+                        <Link href="/dossierMedical/VoirDossier" className={linkClass('/dossierMedical')}>
+                            <Stethoscope size={20} />
+                            Dossiers médicaux
+                        </Link>
+
+                        <Link href="/rapports" className={linkClass('/rapports')}>
+                            <FileText size={20} />
+                            Rapports
+                        </Link>
+
+                        <Link href="/users" className={linkClass('/users')}>
+                            <Users size={20} />
+                            Utilisateurs
+                        </Link>
+                    </nav>
+                </div>
+
+                {/* Zone utilisateur */}
+                {user && (
+                    <div className="mt-6 rounded-xl bg-pink-600 shadow-inner backdrop-blur-sm">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <button className="flex w-full items-center gap-3 rounded-md p-2 text-white transition hover:bg-pink-500/40">
+                                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-pink-200 font-bold text-pink-800">
+                                        {getInitials(user.nom, user.prenom)}
+                                    </div>
+                                    <div className="flex-1 text-left">
+                                        <div className="font-semibold">
+                                            {user.prenom} {user.nom}
+                                        </div>
+                                        <div className="text-sm text-pink-200">{user.role || 'Utilisateur'}</div>
+                                    </div>
+                                </button>
+                            </DropdownMenuTrigger>
+
+                            <DropdownMenuContent className="mt-2 w-56 rounded-md bg-white text-gray-800 shadow-lg">
+                                <DropdownMenuItem asChild>
+                                    <Link href="/profile" className="flex items-center gap-2 rounded-md px-2 py-2 transition hover:bg-pink-100">
+                                        <User size={16} />
+                                        Profil
+                                    </Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    onSelect={(e) => {
+                                        e.preventDefault();
+                                        handleLogout();
+                                    }}
+                                    className="flex items-center gap-2 rounded-md px-2 py-2 text-red-600 transition hover:bg-red-100"
+                                >
+                                    <LogOut size={16} />
+                                    Déconnexion
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
+                )}
+            </aside>
+
+            {/* Main Content */}
+            <main className="flex-1 overflow-y-auto p-6">{children}</main>
         </div>
-
-        {/* Dashboard */}
-        <a
-          href="/dashboard"
-          className="flex items-center gap-3 px-4 py-2 hover:bg-violet-600 hover:shadow rounded-md transition"
-        >
-          <LayoutDashboard size={20} />
-          <span className="font-medium">Dashboard</span>
-        </a>
-
-        {/* Patientes */}
-        <Disclosure>
-          {({ open }) => (
-            <div className="mt-4">
-              <Disclosure.Button className="flex w-full items-center justify-between px-4 py-2 hover:bg-violet-600 hover:shadow rounded-md transition">
-                <span className="flex items-center gap-3">
-                  <Users size={20} />
-                  Patientes
-                </span>
-                <ChevronDown
-                  className={`transition-transform duration-300 ${open ? 'rotate-180' : ''}`}
-                />
-              </Disclosure.Button>
-              <Disclosure.Panel className="pl-12 mt-2 space-y-2 text-sm text-violet-100">
-                <a
-                  href="/patientes/liste"
-                  className="block hover:text-yellow-200 transition"
-                >
-                  👩‍⚕️ Liste des patientes
-                </a>
-                <a
-                  href="/patientes/ajouter"
-                  className="block hover:text-yellow-200 transition"
-                >
-                  ➕ Ajouter une patiente
-                </a>
-              </Disclosure.Panel>
-            </div>
-          )}
-        </Disclosure>
-
-        {/* Consultations */}
-        <Disclosure>
-          {({ open }) => (
-            <div className="mt-4">
-              <Disclosure.Button className="flex w-full items-center justify-between px-4 py-2 hover:bg-violet-600 hover:shadow rounded-md transition">
-                <span className="flex items-center gap-3">
-                  <Stethoscope size={20} />
-                  Consultations
-                </span>
-                <ChevronDown
-                  className={`transition-transform duration-300 ${open ? 'rotate-180' : ''}`}
-                />
-              </Disclosure.Button>
-              <Disclosure.Panel className="pl-12 mt-2 space-y-2 text-sm text-violet-100">
-                <a
-                  href="/consultations/prenatales"
-                  className="block hover:text-yellow-200 transition"
-                >
-                  🤰 Prénatales
-                </a>
-                <a
-                  href="/consultations/postnatales"
-                  className="block hover:text-yellow-200 transition"
-                >
-                  👶 Postnatales
-                </a>
-              </Disclosure.Panel>
-            </div>
-          )}
-        </Disclosure>
-
-        {/* Dossiers médicaux */}
-        <Disclosure>
-          {({ open }) => (
-            <div className="mt-4">
-              <Disclosure.Button className="flex w-full items-center justify-between px-4 py-2 hover:bg-violet-600 hover:shadow rounded-md transition">
-                <span className="flex items-center gap-3">
-                  <Stethoscope size={20} />
-                  Dossiers médicaux
-                </span>
-                <ChevronDown
-                  className={`transition-transform duration-300 ${open ? 'rotate-180' : ''}`}
-                />
-              </Disclosure.Button>
-              <Disclosure.Panel className="pl-12 mt-2 space-y-2 text-sm text-violet-100">
-                <a
-                  href="/dossierMedical/VoirDossier"
-                  className="block hover:text-yellow-200 transition"
-                >
-                  Voir Dossier
-                </a>
-                <a
-                  href="/dossierMedical/postnatales"
-                  className="block hover:text-yellow-200 transition"
-                >
-                  👶 Postnatales
-                </a>
-              </Disclosure.Panel>
-            </div>
-          )}
-        </Disclosure>
-
-        {/* Rapports */}
-        <a
-          href="/rapports"
-          className="flex items-center gap-3 px-4 py-2 mt-4 hover:bg-violet-600 hover:shadow rounded-md transition"
-        >
-          <FileText size={20} />
-          <span className="font-medium">Rapports</span>
-        </a>
-      </aside>
-
-      {/* Contenu principal */}
-      <main className="flex-1 p-6">{children}</main>
-    </div>
-  );
+    );
 }
