@@ -12,8 +12,11 @@ type Patiente = {
     dossierCree: boolean;
     prescription?: string;
     medecin?: string;
+<<<<<<< HEAD
     groupeSanguin: string;
     typeConsultation: string; // Ajout du type de consultation
+=======
+>>>>>>> d9e71852033695463b9b433b79ff468dd4e4a1ca
 };
 
 const Liste: React.FC = () => {
@@ -28,8 +31,11 @@ const Liste: React.FC = () => {
             dossierCree: true,
             prescription: 'Paracétamol 500mg',
             medecin: 'Dr. Diallo',
+<<<<<<< HEAD
             groupeSanguin: 'A+',
             typeConsultation: 'Consultation générale',
+=======
+>>>>>>> d9e71852033695463b9b433b79ff468dd4e4a1ca
         },
         {
             id: 2,
@@ -41,8 +47,11 @@ const Liste: React.FC = () => {
             dossierCree: true,
             prescription: 'Amoxicilline 250mg',
             medecin: 'Dr. Sarr',
+<<<<<<< HEAD
             groupeSanguin: 'O-',
             typeConsultation: 'Consultation pédiatrique',
+=======
+>>>>>>> d9e71852033695463b9b433b79ff468dd4e4a1ca
         },
         {
             id: 3,
@@ -54,8 +63,11 @@ const Liste: React.FC = () => {
             dossierCree: true,
             prescription: 'Ibuprofène 400mg',
             medecin: 'Dr. Toure',
+<<<<<<< HEAD
             groupeSanguin: 'B+',
             typeConsultation: 'Consultation spécialisée',
+=======
+>>>>>>> d9e71852033695463b9b433b79ff468dd4e4a1ca
         },
         {
             id: 4,
@@ -67,8 +79,11 @@ const Liste: React.FC = () => {
             dossierCree: true,
             prescription: 'Oméprazole 20mg',
             medecin: 'Dr. Mbaye',
+<<<<<<< HEAD
             groupeSanguin: 'AB+',
             typeConsultation: 'Consultation d\'urgence',
+=======
+>>>>>>> d9e71852033695463b9b433b79ff468dd4e4a1ca
         },
         {
             id: 5,
@@ -80,13 +95,17 @@ const Liste: React.FC = () => {
             dossierCree: true,
             prescription: 'Loratadine 10mg',
             medecin: 'Dr. Keita',
+<<<<<<< HEAD
             groupeSanguin: 'A-',
             typeConsultation: 'Consultation de suivi',
+=======
+>>>>>>> d9e71852033695463b9b433b79ff468dd4e4a1ca
         },
     ]);
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [searchQuery, setSearchQuery] = useState('');
+<<<<<<< HEAD
     const [selectedTypeConsultation, setSelectedTypeConsultation] = useState<string>(''); // Filtre par type de consultation
     const [showConfirmDelete, setShowConfirmDelete] = useState<{ id: number | null; show: boolean }>({ id: null, show: false });
 
@@ -110,14 +129,24 @@ const Liste: React.FC = () => {
     const handleDownload = () => {
         const csvContent = [
             ['ID', 'Nom', 'Prénom', 'Type de Consultation', 'Groupe Sanguin', 'Médecin Traitant', 'Âge', 'Date de Naissance', 'Numéro', "Date d'Enregistrement", 'Dossier Créé'],
+=======
+    const [showConfirmDelete, setShowConfirmDelete] = useState<{ id: number | null; show: boolean }>({ id: null, show: false });
+
+    const handleDownload = () => {
+        const csvContent = [
+            ['ID', 'Nom', 'Prénom', 'Date de Naissance', 'Numéro', "Date d'Enregistrement", 'Dossier Créé'],
+>>>>>>> d9e71852033695463b9b433b79ff468dd4e4a1ca
             ...patientes.map((patiente) => [
                 patiente.id,
                 patiente.nom,
                 patiente.prenom,
+<<<<<<< HEAD
                 patiente.typeConsultation,
                 patiente.groupeSanguin,
                 patiente.medecin || '',
                 calculateAge(patiente.dateNaissance),
+=======
+>>>>>>> d9e71852033695463b9b433b79ff468dd4e4a1ca
                 patiente.dateNaissance,
                 patiente.numero,
                 patiente.dateEnregistrement,
@@ -144,6 +173,7 @@ const Liste: React.FC = () => {
     };
 
     const filteredPatientes = patientes.filter(
+<<<<<<< HEAD
         (patiente) => {
             // Filtre par recherche textuelle
             const matchesSearch = patiente.nom.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -157,6 +187,12 @@ const Liste: React.FC = () => {
 
             return matchesSearch && matchesType;
         }
+=======
+        (patiente) =>
+            patiente.nom.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            patiente.prenom.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            patiente.numero.includes(searchQuery),
+>>>>>>> d9e71852033695463b9b433b79ff468dd4e4a1ca
     );
 
     return (
@@ -170,6 +206,7 @@ const Liste: React.FC = () => {
                         <p className="text-sm text-gray-500">Dernière mise à jour : {new Date().toLocaleDateString()}</p>
                     </div>
                     <div className="relative mb-4">
+<<<<<<< HEAD
                         <input
                             type="text"
                             placeholder="Rechercher par nom, prénom, groupe sanguin ou médecin..."
@@ -240,6 +277,19 @@ const Liste: React.FC = () => {
                         <div className="flex space-x-2">
                             <a
                                 href="/patientes/ajouter"
+=======
+                        <input type="text" placeholder="Rechercher une patiente..." className="w-full rounded-lg border py-2 pr-4 pl-10" />
+                        <span className="absolute top-2.5 left-3">🔍</span>
+                    </div>
+                </div>
+                {/* Tableau historique */}
+                <div className="rounded-lg bg-white p-6 shadow-md">
+                    <div className="mb-4 flex items-center justify-between">
+                        <h2 className="text-xl font-semibold text-pink-600">Historique des Consultations</h2>
+                        <div className="flex space-x-2">
+                            <a
+                                href="/patiente/nouveau"
+>>>>>>> d9e71852033695463b9b433b79ff468dd4e4a1ca
                                 className="rounded-lg bg-pink-500 px-4 py-2 font-semibold text-white transition hover:bg-pink-600"
                             >
                                 Ajouter une Patiente
@@ -252,6 +302,7 @@ const Liste: React.FC = () => {
                             </button>
                         </div>
                     </div>
+<<<<<<< HEAD
 
                     <div className="overflow-x-auto">
                         <table className="min-w-full text-sm">
@@ -344,6 +395,64 @@ const Liste: React.FC = () => {
                                         Supprimer
                                     </button>
                                 </div>
+=======
+                    <table className="min-w-full text-sm">
+                        <thead>
+                            <tr className="border-b text-left text-gray-500">
+                                <th className="px-4 py-2">ID</th>
+                                <th className="px-4 py-2">Date D'Enregistrement</th>
+                                <th className="px-4 py-2">Nom</th>
+                                <th className="px-4 py-2">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {filteredPatientes.map((patiente) => (
+                                <tr key={patiente.id} className="border-t hover:bg-pink-50">
+                                    <td className="px-4 py-2">{patiente.numero.substring(0, 6)}</td>
+                                    <td className="px-4 py-2">{patiente.dateEnregistrement}</td>
+                                    <td className="px-4 py-2">
+                                        {patiente.prenom} {patiente.nom} — {patiente.medecin}
+                                    </td>
+                                    <td className="flex items-center space-x-2 px-4 py-2">
+                                        <a
+                                            href={`/patiente/${patiente.id}/dossier`}
+                                            className="rounded bg-pink-500 px-3 py-1 text-white hover:bg-pink-600"
+                                        >
+                                            Voir dossier
+                                        </a>
+                                        <a
+                                            href={`/patiente/${patiente.id}/dossier/nouveau`}
+                                            className="rounded bg-pink-300 px-3 py-1 text-white hover:bg-pink-400"
+                                        >
+                                            Créer dossier
+                                        </a>
+                                        <button
+                                            onClick={() => setShowConfirmDelete({ id: patiente.id, show: true })}
+                                            className="ml-2 text-red-500 hover:text-red-600"
+                                        >
+                                            <Trash className="h-5 w-5" />
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+
+                    {/* Message de confirmation */}
+                    {showConfirmDelete.show && (
+                        <div className="mt-4 rounded-lg bg-red-100 p-4 text-red-800">
+                            <p className="font-semibold">Êtes-vous sûr de vouloir supprimer cette patiente ?</p>
+                            <div className="mt-2 flex justify-center space-x-4">
+                                <button
+                                    onClick={() => handleDelete(showConfirmDelete.id!)}
+                                    className="rounded-lg bg-pink-500 px-4 py-2 text-white hover:bg-pink-600"
+                                >
+                                    Oui, supprimer
+                                </button>
+                                <button onClick={cancelDelete} className="rounded-lg bg-gray-300 px-4 py-2 text-black hover:bg-gray-400">
+                                    Annuler
+                                </button>
+>>>>>>> d9e71852033695463b9b433b79ff468dd4e4a1ca
                             </div>
                         </div>
                     )}

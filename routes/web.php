@@ -20,6 +20,7 @@ Route::get('/patientes/ajouter', function () {
 Route::get('/patientes/liste', function () {
     return Inertia::render('patientes/liste'); // Cette vue React se trouve dans resources/js/pages
 });
+<<<<<<< HEAD
 Route::get('/patientes/dossier', function () {
     return Inertia::render('patientes/dossier'); // Cette vue React se trouve dans resources/js/pages
 });
@@ -35,6 +36,11 @@ Route::get('/consultations/postnatales', function () {
 Route::get('/consultations/prenatales', function () {
     return Inertia::render('/consultations/prenatales');
 });
+=======
+Route::get('/dossierMedical/VoirDossier', function () {
+    return Inertia::render('dossierMedical/VoirDossier');
+});
+>>>>>>> d9e71852033695463b9b433b79ff468dd4e4a1ca
 
 // Gestion des utilisateurs
 Route::get('/users', [AdminController::class, 'index'])->name('users.index');

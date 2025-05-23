@@ -3,7 +3,11 @@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Inertia } from '@inertiajs/inertia';
 import { Link, usePage } from '@inertiajs/react';
+<<<<<<< HEAD
 import { FileText, LayoutDashboard, LogOut, Stethoscope, User, Users, Baby, Heart, Calendar, ChevronDown } from 'lucide-react';
+=======
+import { FileText, LayoutDashboard, LogOut, Stethoscope, User, Users } from 'lucide-react';
+>>>>>>> d9e71852033695463b9b433b79ff468dd4e4a1ca
 
 interface SidebarProps {
     children: React.ReactNode;
@@ -28,6 +32,7 @@ export default function Sidebar({ children }: SidebarProps) {
         return `${prenom.charAt(0)}${nom.charAt(0)}`.toUpperCase();
     };
 
+<<<<<<< HEAD
     // Options du menu déroulant consultations
     const consultationItems = [
 
@@ -53,6 +58,8 @@ export default function Sidebar({ children }: SidebarProps) {
         // }
     ];
 
+=======
+>>>>>>> d9e71852033695463b9b433b79ff468dd4e4a1ca
     return (
         <div className="flex h-screen overflow-hidden bg-pink-50">
             {/* Sidebar */}
@@ -75,6 +82,7 @@ export default function Sidebar({ children }: SidebarProps) {
                             Patientes
                         </Link>
 
+<<<<<<< HEAD
                         {/* Menu déroulant Consultations */}
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -109,6 +117,14 @@ export default function Sidebar({ children }: SidebarProps) {
                         </DropdownMenu>
 
                         <Link href="/patientes/dossier" className={linkClass('/dossier')}>
+=======
+                        <Link href="/consultations/prenatales" className={linkClass('/consultations')}>
+                            <Stethoscope size={20} />
+                            Consultations
+                        </Link>
+
+                        <Link href="/dossierMedical/VoirDossier" className={linkClass('/dossierMedical')}>
+>>>>>>> d9e71852033695463b9b433b79ff468dd4e4a1ca
                             <Stethoscope size={20} />
                             Dossiers médicaux
                         </Link>

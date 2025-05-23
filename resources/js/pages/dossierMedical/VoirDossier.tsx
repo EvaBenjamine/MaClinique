@@ -1,6 +1,11 @@
 import React from 'react';
+<<<<<<< HEAD
 import Sidebar from '@/components/Sidebar'; 
 
+=======
+import Sidebar from '@/components/Sidebar'; // Import du composant Sidebar
+import './dossierMedical.css'; // Import du fichier CSS
+>>>>>>> d9e71852033695463b9b433b79ff468dd4e4a1ca
 
 // Composant pour l'historique des diagnostics
 const DiagnosisHistory: React.FC = () => {
