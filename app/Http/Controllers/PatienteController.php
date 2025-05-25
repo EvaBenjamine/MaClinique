@@ -35,15 +35,27 @@ class PatienteController extends Controller
                     'prenom' => $patiente->user->prenom,
                     'email' => $patiente->user->email,
                     'age' => $patiente->age,
+                    'groupe_sanguin' => $patiente->groupe_sanguin,
+                    'adresse' => $patiente->adresse,
                     'numero_telephone' => $patiente->numero_telephone,
                     'date_derniere_consultation' => $patiente->dossierPatient?->date_derniere_consultation,
                     'statut_dossier' => $patiente->dossierPatient?->statut_dossier ?? 'Non défini',
                     'date_accouchement_prevue' => $patiente->dossierPatient?->date_accouchement_prevue,
+                    'sage_femme' => $patiente->dossierPatient->sageFemme->user->nom . ' ' . $patiente->dossierPatient->sageFemme->user->prenom,
                 ];
             });
 
-        return Inertia::render('patientes/ListePatientes', [
+        // Récupérer les sages-femmes pour le formulaire
+        $sagesFemmes = SageFemme::with('user')->get()->map(function ($sf) {
+            return [
+                'id' => $sf->id,
+                'nom' => $sf->user->nom . ' ' . $sf->user->prenom,
+            ];
+        });
+
+        return Inertia::render('patientes/liste', [
             'patientes' => $patientes,
+            'sagesFemmes' => $sagesFemmes,
         ]);
     }
 
@@ -60,7 +72,7 @@ class PatienteController extends Controller
             ];
         });
 
-        return Inertia::render('Patientes/AjouterPatiente', [
+        return response()->json([
             'sagesFemmes' => $sagesFemmes,
         ]);
     }
@@ -75,7 +87,6 @@ class PatienteController extends Controller
             'nom' => 'required|string|max:255',
             'prenom' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
             'age' => 'required|integer|min:1|max:150',
             'profession' => 'nullable|string|max:255',
             'situation_matrimoniale' => 'nullable|string|max:50',
@@ -119,7 +130,7 @@ class PatienteController extends Controller
                 'nom' => $validated['nom'],
                 'prenom' => $validated['prenom'],
                 'email' => $validated['email'],
-                'password' => Hash::make($validated['password']),
+                'password' => Hash::make('password'),
                 'role' => 'patiente',
             ]);
 
@@ -185,21 +196,18 @@ class PatienteController extends Controller
         $patiente = Patiente::with([
             'user',
             'dossierPatient.sageFemme.user',
-            'consultations' => function ($query) {
-                $query->orderBy('date_consultation', 'desc')->take(5);
-            },
-            'examens' => function ($query) {
-                $query->orderBy('date_examen', 'desc')->take(5);
-            },
-            'prescriptions' => function ($query) {
-                $query->orderBy('created_at', 'desc')->take(5);
-            },
-            'documents' => function ($query) {
-                $query->orderBy('created_at', 'desc')->take(5);
-            }
         ])->findOrFail($id);
 
-        return Inertia::render('Patientes/DossierPatiente', [
+        $dossier = $patiente->dossierPatient;
+        $sage_femme = $dossier->sageFemme->user;
+        $consultations = $dossier->consultations;
+        $examens = $dossier->examens;
+        $prescriptions = $dossier->prescriptions;
+        $documents = $dossier->documents;
+
+        //dd($dossier, $patiente, $sage_femme);
+        return Inertia::render('patientes/dossier', [
+            'dossier' => $dossier,
             'patiente' => [
                 'id' => $patiente->id,
                 'nom' => $patiente->user->nom,
@@ -212,12 +220,14 @@ class PatienteController extends Controller
                 'numero_telephone' => $patiente->numero_telephone,
                 'numero_urgence' => $patiente->numero_urgence,
                 'adresse' => $patiente->adresse,
-                'dossier' => $patiente->dossierPatient,
-                'consultations' => $patiente->consultations,
-                'examens' => $patiente->examens,
-                'prescriptions' => $patiente->prescriptions,
-                'documents' => $patiente->documents,
-            ]
+            ],
+            'sage_femme' => $sage_femme,
+            'consultations' => $consultations,
+            'examens' => $examens,
+            'prescriptions' => $prescriptions,
+            'documents' => $documents,
+            'trimestre' => $dossier->trimestre(),
+            'age_grossesse_semaines' => $dossier->ageGrossesseSemaines(),
         ]);
     }
 

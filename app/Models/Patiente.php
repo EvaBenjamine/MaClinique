@@ -27,8 +27,8 @@ class Patiente extends Model
     }
 
     // Relation avec le dossier médical (1 patiente = 1 dossier)
-    public function dossierMedical()
+    public function dossierPatient()
     {
-        return $this->hasOne(DossierMedical::class);
+        return $this->hasOne(DossierPatient::class);
     }
 };

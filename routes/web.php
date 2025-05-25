@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\PatienteController;
 
 Route::get('/', function () {
     return Inertia::render('welcome');
@@ -14,18 +15,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('dashboard');
 });
 
-Route::get('/patientes/ajouter', function () {
-    return Inertia::render('patientes/ajouter'); // Cette vue React se trouve dans resources/js/pages
-});
-Route::get('/patientes/liste', function () {
-    return Inertia::render('patientes/liste'); // Cette vue React se trouve dans resources/js/pages
-});
-Route::get('/dossierMedical/VoirDossier', function () {
-    return Inertia::render('dossierMedical/VoirDossier');
+Route::get('/patientes', [PatienteController::Class, 'index'])->name('patientes.index');
+Route::post('/patientes', [PatienteController::Class, 'store'])->name('patientes.store');
+
+Route::get('/dossiers', function () {
+    return Inertia::render('dossierMedical/index');
 });
 
+Route::get('/dossiers/{id}', [PatienteController::Class, 'show'])->name('dossiers.show');
+
+Route::get('/consultations', function(){
+    return Inertia::render('consultations/index');
+})->name('consultations.index');
+
 // Gestion des utilisateurs
-Route::get('/users', [AdminController::class, 'index'])->name('users.index');
+Route::get('/utilisateurs', [AdminController::class, 'index'])->name('users.index');
 Route::get('/users/{id}', [AdminController::class, 'show'])->name('users.show');
 Route::post('/admins', [AdminController::class, 'storeAdmin'])->name('admins.store');
 Route::post('/sage-femmes', [AdminController::class, 'storeSageFemme'])->name('sage-femmes.store');

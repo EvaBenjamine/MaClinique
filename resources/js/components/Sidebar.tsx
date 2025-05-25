@@ -3,7 +3,7 @@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Inertia } from '@inertiajs/inertia';
 import { Link, usePage } from '@inertiajs/react';
-import { FileText, LayoutDashboard, LogOut, Stethoscope, User, Users } from 'lucide-react';
+import { Calendar, FileText, LayoutDashboard, LogOut, Stethoscope, User, Users } from 'lucide-react';
 
 interface SidebarProps {
     children: React.ReactNode;
@@ -45,27 +45,27 @@ export default function Sidebar({ children }: SidebarProps) {
                             Dashboard
                         </Link>
 
-                        <Link href="/patientes/liste" className={linkClass('/patientes')}>
-                            <Users size={20} />
+                        <Link href="/patientes" className={linkClass('/patientes')}>
+                            <User size={20} />
                             Patientes
                         </Link>
 
-                        <Link href="/consultations/prenatales" className={linkClass('/consultations')}>
+                        <Link href="/consultations" className={linkClass('/consultations')}>
                             <Stethoscope size={20} />
                             Consultations
                         </Link>
 
-                        <Link href="/dossierMedical/VoirDossier" className={linkClass('/dossierMedical')}>
-                            <Stethoscope size={20} />
+                        <Link href="/dossiers" className={linkClass('/dossiers')}>
+                            <FileText size={20} />
                             Dossiers médicaux
                         </Link>
 
-                        <Link href="/rapports" className={linkClass('/rapports')}>
-                            <FileText size={20} />
-                            Rapports
+                        <Link href="/rdv" className={linkClass('/rdv')}>
+                            <Calendar size={20} />
+                            Rendez-vous
                         </Link>
 
-                        <Link href="/users" className={linkClass('/users')}>
+                        <Link href="/utilisateurs" className={linkClass('/utilisateurs')}>
                             <Users size={20} />
                             Utilisateurs
                         </Link>
