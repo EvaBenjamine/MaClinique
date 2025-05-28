@@ -4,15 +4,15 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\PatienteController;
+use App\Http\Controllers\ConsultationController;
+use App\Http\Controllers\DashboardController;
 
 Route::get('/', function () {
     return Inertia::render('welcome');
 })->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('dashboard', function () {
-        return Inertia::render('dashboard');
-    })->name('dashboard');
+    Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 });
 
 Route::get('/patientes', [PatienteController::Class, 'index'])->name('patientes.index');
@@ -24,9 +24,21 @@ Route::get('/dossiers', function () {
 
 Route::get('/dossiers/{id}', [PatienteController::Class, 'show'])->name('dossiers.show');
 
-Route::get('/consultations', function(){
-    return Inertia::render('consultations/index');
-})->name('consultations.index');
+Route::get('/consultations', [ConsultationController::Class, 'index'])->name('consultations.index');
+Route::get('/consultations/create', function(){
+    return Inertia::render('consultations/create');
+})->name('consultations.create');
+Route::post('/consultations', [PatienteController::Class, 'storeConsultation'])->name('consultations.store');
+Route::post('/examens', [PatienteController::Class, 'storeExamen'])->name('examens.store');
+Route::post('/prescriptions', [PatienteController::Class, 'storePrescription'])->name('prescriptions.store');
+Route::post('/rdv', [PatienteController::Class, 'storeRdv'])->name('rendez-vous.store');
+Route::post('/documents', [PatienteController::Class, 'storeDocument'])->name('documents.store');
+Route::post('/notes', [PatienteController::Class, 'storeNote'])->name('notes-suivi.store');
+Route::post('/accouchements', [PatienteController::Class, 'storeAccouchement'])->name('accouchements.store');
+
+Route::get('/rdv', function(){
+    return Inertia::render('rdv/index');
+})->name('rdv.index');
 
 // Gestion des utilisateurs
 Route::get('/utilisateurs', [AdminController::class, 'index'])->name('users.index');

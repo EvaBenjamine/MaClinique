@@ -1,7 +1,5 @@
 import Sidebar from '@/components/Sidebar';
-import { type BreadcrumbItem } from '@/types';
-import { Head } from '@inertiajs/react';
-import { useEffect, useState } from 'react';
+import { Head, usePage } from '@inertiajs/react';
 import { Bar, Pie } from 'react-chartjs-2';
 
 import {
@@ -16,13 +14,6 @@ import {
     Tooltip,
 } from 'chart.js';
 
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Dashboard',
-        href: '/dashboard',
-    },
-];
-
 // Enregistrer les composants Chart.js
 ChartJS.register(
     CategoryScale,
@@ -35,31 +26,38 @@ ChartJS.register(
     PieController, // Enregistrer PieController pour les graphiques en secteurs
 );
 
-export default function Dashboard() {
-    const [stats, setStats] = useState({
-        totalPatientes: 0,
-        totalConsultationsPrenatales: 0,
-        totalConsultationsPostnatales: 0,
-        consultationsRestantes: 0,
-    });
+type DashboardProps = {
+    patientesCount: number;
+    usersCount: number;
+    consultations: number;
+    CPN: number;
+    CPP: number;
+    autres: number;
+    Jan: number;
+    Fev: number;
+    Mar: number;
+    Avr: number;
+    Mai: number;
+    Juin: number;
+    Juil: number;
+    Aout: number;
+    Sep: number;
+    Oct: number;
+    Nov: number;
+    Dec: number;
+};
 
-    useEffect(() => {
-        // Simuler une API
-        setStats({
-            totalPatientes: 150,
-            totalConsultationsPrenatales: 120,
-            totalConsultationsPostnatales: 90,
-            consultationsRestantes: 60,
-        });
-    }, []);
+export default function Dashboard() {
+    const { patientesCount, usersCount, consultations, CPN, CPP, autres, Jan, Fev, Mar, Avr, Mai, Juin, Juil, Aout, Sep, Oct, Nov, Dec } =
+        usePage<DashboardProps>().props;
 
     // Données pour les graphiques
     const dataBarChart = {
-        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
         datasets: [
             {
                 label: 'Consultations Mensuelles',
-                data: [30, 45, 70, 50, 90, 120],
+                data: [Jan, Fev, Mar, Avr, Mai, Juin, Juil, Aout, Sep, Oct, Nov, Dec],
                 backgroundColor: 'rgba(255, 99, 132, 0.2)',
                 borderColor: 'rgba(255, 99, 132, 1)',
                 borderWidth: 1,
@@ -68,12 +66,12 @@ export default function Dashboard() {
     };
 
     const dataPieChart = {
-        labels: ['Prénatales', 'Postnatales'],
+        labels: ['Prénatales', 'Postnatales', 'Autres'],
         datasets: [
             {
-                data: [120, 90],
-                backgroundColor: ['#FF99C8', '#FF6B81'],
-                borderColor: ['#FF99C8', '#FF6B81'],
+                data: [CPN, CPP, autres],
+                backgroundColor: ['#FF99C8', '#FF4D4D', '#f74bbb'],
+                borderColor: ['#FF99C8', '#FF6B81', '#f74bbb'],
                 borderWidth: 1,
             },
         ],
@@ -88,10 +86,10 @@ export default function Dashboard() {
 
                 {/* Cartes de statistiques */}
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-                    <StatCard title="Total Patientes" value={stats.totalPatientes} color="bg-pink-100" icon="👩‍⚕️" />
-                    <StatCard title="Consultations Prénatales" value={stats.totalConsultationsPrenatales} color="bg-pink-200" icon="🤰" />
-                    <StatCard title="Consultations Postnatales" value={stats.totalConsultationsPostnatales} color="bg-pink-300" icon="👶" />
-                    <StatCard title="Consultations Restantes" value={stats.consultationsRestantes} color="bg-pink-400" icon="📅" />
+                    <StatCard title="Total Patientes" value={patientesCount} color="bg-pink-100" icon="👩‍⚕️" />
+                    <StatCard title="Consultations Prénatales" value={CPN} color="bg-pink-200" icon="🤰" />
+                    <StatCard title="Consultations Postnatales" value={Number(CPP)} color="bg-pink-300" icon="👶" />
+                    <StatCard title="Consultations Totales" value={Number(CPP + CPN + autres)} color="bg-pink-400" icon="📅" />
                 </div>
 
                 {/* Graphiques */}

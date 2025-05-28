@@ -165,7 +165,7 @@ export default function UsersIndex() {
             case 'secretaire':
                 return 'Secrétaire';
             default:
-                return 'Utilisateur';
+                return 'Patiente';
         }
     };
 

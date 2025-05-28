@@ -292,7 +292,7 @@ export default function AddPatienteModal({ isOpen, onClose, sagesFemmes, onCompl
                         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <div className="space-y-2">
                                 <Label className="text-pink-800" htmlFor="prenom">
-                                    Prénom *
+                                    Prénom
                                 </Label>
                                 <Input
                                     id="prenom"
@@ -306,7 +306,7 @@ export default function AddPatienteModal({ isOpen, onClose, sagesFemmes, onCompl
 
                             <div className="space-y-2">
                                 <Label className="text-pink-800" htmlFor="nom">
-                                    Nom *
+                                    Nom
                                 </Label>
                                 <Input
                                     id="nom"
@@ -321,7 +321,7 @@ export default function AddPatienteModal({ isOpen, onClose, sagesFemmes, onCompl
 
                         <div className="space-y-2">
                             <Label className="text-pink-800" htmlFor="email">
-                                Email *
+                                Email
                             </Label>
                             <Input
                                 id="email"
@@ -337,7 +337,7 @@ export default function AddPatienteModal({ isOpen, onClose, sagesFemmes, onCompl
                         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                             <div className="space-y-2">
                                 <Label className="text-pink-800" htmlFor="age">
-                                    Âge *
+                                    Âge
                                 </Label>
                                 <Input
                                     id="age"
@@ -414,7 +414,7 @@ export default function AddPatienteModal({ isOpen, onClose, sagesFemmes, onCompl
                         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <div className="space-y-2">
                                 <Label className="text-pink-800" htmlFor="numero_telephone">
-                                    Numéro de téléphone *
+                                    Numéro de téléphone
                                 </Label>
                                 <Input
                                     id="numero_telephone"

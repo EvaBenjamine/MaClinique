@@ -3,7 +3,7 @@ import Sidebar from '@/components/Sidebar';
 import { Head, usePage } from '@inertiajs/react';
 
 export default function DossierPatiente() {
-    const { auth, patiente, consultations, examens, prescriptions, documents, dossier, sage_femme, trimestre, age_grossesse_semaines } =
+    const { auth, patiente, consultations, examens, prescriptions, documents, dossier, sage_femme, trimestre, age_grossesse_semaines, sages_femmes } =
         usePage().props;
 
     const dossierP = {
@@ -51,7 +51,7 @@ export default function DossierPatiente() {
             <Head title="Dossier médical" />
             <div className="py-6">
                 <div className="mx-auto max-w-7xl">
-                    <DossierPatientTabs dossier={dossierP} />
+                    <DossierPatientTabs dossier={dossierP} sages_femmes={sages_femmes} />
                 </div>
             </div>
         </Sidebar>

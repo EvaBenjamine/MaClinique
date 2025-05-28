@@ -204,6 +204,13 @@ class PatienteController extends Controller
         $examens = $dossier->examens;
         $prescriptions = $dossier->prescriptions;
         $documents = $dossier->documents;
+        $sages_femmes = SageFemme::with('user')->get()->map(function ($sf) {
+            return [
+                'id' => $sf->id,
+                'nom' => $sf->user->nom ,
+                'prenom' => $sf->user->prenom,
+            ];
+        });
 
         //dd($dossier, $patiente, $sage_femme);
         return Inertia::render('patientes/dossier', [
@@ -228,6 +235,7 @@ class PatienteController extends Controller
             'documents' => $documents,
             'trimestre' => $dossier->trimestre(),
             'age_grossesse_semaines' => $dossier->ageGrossesseSemaines(),
+            'sages_femmes' => $sages_femmes,
         ]);
     }
 
@@ -301,6 +309,112 @@ class PatienteController extends Controller
             DB::rollBack();
             return back()->withErrors(['error' => 'Erreur lors de la mise à jour: ' . $e->getMessage()]);
         }
+    }
+
+    public function storeConsultation(Request $request){
+        $validated = $request->validate([
+            'dossier_patient_id' => 'required|exists:dossier_patients,id',
+            'sage_femme_id' => 'required|exists:sage_femmes,id',
+            'date' => 'required|date',
+            'type_consultation' => 'required|string|max:255',
+            'poids' => 'nullable|numeric',
+            'tension_arterielle_systolique' => 'nullable|numeric',
+            'tension_arterielle_diastolique' => 'nullable|numeric',
+            'hauteur_uterine' => 'nullable|numeric',
+            'position_foetus' => 'nullable|string|max:255',
+            'rythme_cardiaque_foetal' => 'nullable|integer',
+            'observations' => 'nullable|string',
+            'prescriptions' => 'nullable|string',
+            'examens_prescrits' => 'nullable|string',
+            'recommandations' => 'nullable|string',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            // Créer la consultation
+            $consultation = Consultation::create([
+                'dossier_patient_id' => $validated['dossier_patient_id'],
+                'sage_femme_id' => $validated['sage_femme_id'],
+                'date' => $validated['date'],
+                'type_consultation' => $validated['type_consultation'],
+                'poids' => $validated['poids'] ?? null,
+                'tension_arterielle_systolique' => $validated['tension_arterielle_systolique'] ?? null,
+                'tension_arterielle_diastolique' => $validated['tension_arterielle_diastolique'] ?? null,
+                'hauteur_uterine' => $validated['hauteur_uterine'] ?? null,
+                'position_foetus' => $validated['position_foetus'] ?? null,
+                'rythme_cardiaque_foetal' => $validated['rythme_cardiaque_foetal'] ?? null,
+                'observations' => $validated['observations'] ?? null,
+                'prescriptions' => $validated['prescriptions'] ?? null,
+                'examens_prescrits' => $validated['examens_prescrits'] ?? null,
+                'recommandations' => $validated['recommandations'] ?? null,
+            ]);
+
+            // Mettre à jour la date de dernière consultation dans le dossier patient
+            $dossier = DossierPatient::findOrFail($validated['dossier_patient_id']);
+            $dossier->update(['date_derniere_consultation' => $validated['date']]);
+
+            DB::commit();
+
+            return back()->with('success', 'Consultation enregistrée avec succès.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withErrors(['error' => 'Erreur lors de l\'enregistrement de la consultation: ' . $e->getMessage()]);
+        }
+
+    }
+
+
+    public function storeExamen(Request $request)
+    {
+        $validated = $request->validate([
+            'dossier_patient_id' => 'required|exists:dossier_patients,id',
+            'realise_par' => 'nullable|exists:sage_femmes,id',
+            'prescrit_par' => 'nullable|exists:sage_femmes,id',
+            'type' => 'required|string|max:255',
+            'date_examen' => 'required|date',
+            'resultats' => 'nullable|string|max:1000',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            // Créer l'examen
+            $examen = Examen::create([
+                'dossier_patient_id' => $validated['dossier_patient_id'],
+                'type' => $validated['type'],
+                'date' => $validated['date_examen'],
+                'realise_par' => $validated['realise_par'] ?? null,
+                'prescrit_par' => $validated['prescrit_par'] ?? null,
+                'resultats' => $validated['resultats'] ?? null,
+            ]);
+
+            // // Créer l'échographie si c'est une échographie
+            // if ($validated['type_examen'] === 'Échographie') {
+            //     $echographie = Echographie::create([
+            //         'examen_id' => $examen->id,
+            //         'trimestre' => $validated['trimestre'],
+            //         'biometrie' => $validated['biometrie'] ?? null,
+            //         'mesures_biometriques' => $validated['mesures_biometriques'] ?? null,
+            //         'sexe_foetus' => $validated['sexe_foetus'] ?? null,
+            //         'poids_estime' => $validated['poids_estime'] ?? null,
+            //         'observations_morphologiques' => $validated['observations_morphologiques'] ?? null,
+            //         'observations_placenta' => $validated['observations_placenta'] ?? null,
+            //         'observations_liquide_amniotique' => $validated['observations_liquide_amniotique'] ?? null,
+            //         'observations_generales' => $validated['observations_generales'] ?? null,
+            //     ]);
+            // }
+
+            DB::commit();
+
+            return back()->with('success', 'Examen enregistrée avec succès.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withErrors(['error' => 'Erreur lors de l\'enregistrement de l\'examen: ' . $e->getMessage()]);
+        }
+
     }
 
     /**

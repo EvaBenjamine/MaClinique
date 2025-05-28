@@ -206,7 +206,7 @@ export default function PatientesIndex() {
     // Fonction appelée après la création réussie d'une patiente
     const handlePatienteCreated = (): void => {
         // Rafraîchir la page pour afficher la nouvelle patiente
-        Inertia.reload();
+        //Inertia.reload();
     };
 
     const getInitials = (nom: string, prenom: string): string => {

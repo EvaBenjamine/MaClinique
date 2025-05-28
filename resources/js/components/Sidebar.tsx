@@ -65,10 +65,12 @@ export default function Sidebar({ children }: SidebarProps) {
                             Rendez-vous
                         </Link>
 
-                        <Link href="/utilisateurs" className={linkClass('/utilisateurs')}>
-                            <Users size={20} />
-                            Utilisateurs
-                        </Link>
+                        {user.role == 'admin' && (
+                            <Link href="/utilisateurs" className={linkClass('/utilisateurs')}>
+                                <Users size={20} />
+                                Utilisateurs
+                            </Link>
+                        )}
                     </nav>
                 </div>
 

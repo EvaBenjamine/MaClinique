@@ -15,17 +15,25 @@ class ConsultationController extends Controller
     /**
      * Afficher la liste des consultations pour un dossier patient
      */
-    public function index($dossierId)
+    public function index()
     {
-        $dossier = DossierPatient::with('patiente.user')->findOrFail($dossierId);
-        $consultations = Consultation::with('sageFemme.user')
-            ->where('dossier_patient_id', $dossierId)
+        $consultations = Consultation::with(['sageFemme.user', 'dossierPatient.patiente.user'])
             ->orderBy('date', 'desc')
             ->get();
 
-        return Inertia::render('Consultations/ListeConsultations', [
-            'dossier' => $dossier,
+        foreach ($consultations as $consultation) {
+            $consultation->patient = $consultation->dossierPatient->patiente->user;
+            $consultation->sage_femme = $consultation->sageFemme->user;
+
+            $consultation->sage_femme_nom = $consultation->sageFemme->user->nom;
+            $consultation->sage_femme_prenom = $consultation->sageFemme->user->prenom;
+        }
+
+
+        return Inertia::render('consultations/index', [
             'consultations' => $consultations,
+            'sagesFemmes' => SageFemme::with('user')->get(),
+            'dossiers' => DossierPatient::with('patiente.user')->get(),
         ]);
     }
 
@@ -43,57 +51,7 @@ class ConsultationController extends Controller
         ]);
     }
 
-    /**
-     * Enregistrer une nouvelle consultation
-     */
-    public function store(Request $request, $dossierId)
-    {
-        // Valider les données
-        $validated = $request->validate([
-            'sage_femme_id' => 'required|exists:sage_femmes,id',
-            'date' => 'required|date',
-            'type_consultation' => 'required|string|max:255',
-            'poids' => 'nullable|numeric',
-            'tension_arterielle_systolique' => 'nullable|numeric',
-            'tension_arterielle_diastolique' => 'nullable|numeric',
-            'hauteur_uterine' => 'nullable|numeric',
-            'position_foetus' => 'nullable|string|max:255',
-            'rythme_cardiaque_foetal' => 'nullable|integer',
-            'observations' => 'nullable|string',
-            'prescriptions' => 'nullable|string',
-            'examens_prescrits' => 'nullable|string',
-            'recommandations' => 'nullable|string',
-        ]);
 
-        // Vérifier que le dossier existe
-        $dossier = DossierPatient::findOrFail($dossierId);
-
-        // Créer la consultation
-        $consultation = Consultation::create([
-            'dossier_patient_id' => $dossierId,
-            'sage_femme_id' => $validated['sage_femme_id'],
-            'date' => $validated['date'],
-            'type_consultation' => $validated['type_consultation'],
-            'poids' => $validated['poids'],
-            'tension_arterielle_systolique' => $validated['tension_arterielle_systolique'],
-            'tension_arterielle_diastolique' => $validated['tension_arterielle_diastolique'],
-            'hauteur_uterine' => $validated['hauteur_uterine'],
-            'position_foetus' => $validated['position_foetus'],
-            'rythme_cardiaque_foetal' => $validated['rythme_cardiaque_foetal'],
-            'observations' => $validated['observations'],
-            'prescriptions' => $validated['prescriptions'],
-            'examens_prescrits' => $validated['examens_prescrits'],
-            'recommandations' => $validated['recommandations'],
-        ]);
-
-        // Mettre à jour la date de dernière consultation dans le dossier
-        $dossier->update([
-            'date_derniere_consultation' => $validated['date'],
-        ]);
-
-        return redirect()->route('dossiers.consultations.index', $dossierId)
-            ->with('success', 'Consultation ajoutée avec succès.');
-    }
 
     /**
      * Afficher les détails d'une consultation
