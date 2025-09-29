@@ -18,9 +18,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 Route::get('/patientes', [PatienteController::Class, 'index'])->name('patientes.index');
 Route::post('/patientes', [PatienteController::Class, 'store'])->name('patientes.store');
 
-Route::get('/dossiers', function () {
-    return Inertia::render('dossierMedical/index');
-});
+Route::get('/dossiers', [PatienteController::Class, 'indexDossiers'])->name('dossiers.index');
 
 Route::get('/dossiers/{id}', [PatienteController::Class, 'show'])->name('dossiers.show');
 

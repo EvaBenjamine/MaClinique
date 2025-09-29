@@ -1,14 +1,12 @@
-import { Head, router } from '@inertiajs/react';
-import { Calendar, ChevronDown, Clock, Download, Eye, Plus, Search, SlidersHorizontal, Trash2, UserCheck, X } from 'lucide-react';
-import { JSX, useEffect, useMemo, useState } from 'react';
+import { Head, router, usePage } from '@inertiajs/react';
+import { ChevronDown, Download, Eye, FileText, Plus, Search, SlidersHorizontal, UserCheck, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
-import AddRendezVousModal from '@/components/rendez-vous/add-rendez-vous-modal';
 import Sidebar from '@/components/Sidebar';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
     DropdownMenu,
     DropdownMenuCheckboxItem,
@@ -21,122 +19,81 @@ import {
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
-type RendezVous = {
+type DossierMedical = {
     id: number;
-    date: string;
-    heure: string;
-    type: string;
-    statut: string;
     patiente: {
         id: number;
         nom: string;
         prenom: string;
         age: number;
         numero_telephone: string;
+        groupe_sanguin: string;
     };
     sage_femme: {
         id: number;
         nom: string;
         prenom: string;
     };
-    motif?: string;
-    notes?: string;
+    statut_dossier: string;
+    date_creation: string;
+    date_derniere_consultation: string | null;
+    date_accouchement_prevue: string | null;
+    trimestre: string;
+    age_grossesse_semaines: number;
+    nombre_consultations: number;
+    nombre_examens: number;
+    grossesse_a_risque: boolean;
+    facteurs_risque?: string;
+    notes_importantes?: string;
 };
 
-export default function RdvIndex() {
-    // Données temporaires pour la démonstration
-    const rendezVousData: RendezVous[] = useMemo(
-        () => [
-            {
-                id: 1,
-                date: '2025-09-30',
-                heure: '09:00',
-                type: 'Consultation de suivi',
-                statut: 'confirmé',
-                patiente: { id: 1, nom: 'Martin', prenom: 'Sophie', age: 28, numero_telephone: '06 12 34 56 78' },
-                sage_femme: { id: 1, nom: 'Dubois', prenom: 'Marie' },
-                motif: 'Contrôle mensuel',
-                notes: 'RAS',
-            },
-            {
-                id: 2,
-                date: '2025-09-30',
-                heure: '10:30',
-                type: 'Échographie',
-                statut: 'en_attente',
-                patiente: { id: 2, nom: 'Laurent', prenom: 'Emma', age: 32, numero_telephone: '06 98 76 54 32' },
-                sage_femme: { id: 1, nom: 'Dubois', prenom: 'Marie' },
-                motif: 'Échographie T2',
-                notes: '',
-            },
-            {
-                id: 3,
-                date: '2025-10-01',
-                heure: '14:00',
-                type: 'Consultation prénatale',
-                statut: 'annulé',
-                patiente: { id: 3, nom: 'Bernard', prenom: 'Julie', age: 26, numero_telephone: '06 11 22 33 44' },
-                sage_femme: { id: 2, nom: 'Lefevre', prenom: 'Anne' },
-                motif: 'Première consultation',
-                notes: 'Patiente indisponible',
-            },
-            {
-                id: 4,
-                date: '2025-10-02',
-                heure: '11:15',
-                type: 'Suivi post-partum',
-                statut: 'confirmé',
-                patiente: { id: 4, nom: 'Moreau', prenom: 'Claire', age: 30, numero_telephone: '06 55 44 33 22' },
-                sage_femme: { id: 1, nom: 'Dubois', prenom: 'Marie' },
-                motif: 'Contrôle 6 semaines',
-                notes: 'Allaitement en cours',
-            },
-        ],
-        [],
-    );
+type PageProps = {
+    dossiers: DossierMedical[];
+};
 
-    const [filteredRendezVous, setFilteredRendezVous] = useState<RendezVous[]>(rendezVousData);
+export default function DossiersIndex() {
+    const { dossiers } = usePage<PageProps>().props;
+
+    const [filteredDossiers, setFilteredDossiers] = useState<DossierMedical[]>(dossiers || []);
     const [searchTerm, setSearchTerm] = useState<string>('');
     const [activeFilters, setActiveFilters] = useState<string[]>([]);
-    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState<boolean>(false);
-    const [selectedRendezVous, setSelectedRendezVous] = useState<RendezVous | null>(null);
-    const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
 
-    // Données temporaires pour les patientes et sages-femmes
-    const patientes = [
-        { id: 1, nom: 'Martin', prenom: 'Sophie' },
-        { id: 2, nom: 'Laurent', prenom: 'Emma' },
-        { id: 3, nom: 'Bernard', prenom: 'Julie' },
-        { id: 4, nom: 'Moreau', prenom: 'Claire' },
-    ];
-
-    const sagesFemmes = [
-        { id: 1, nom: 'Dubois', prenom: 'Marie' },
-        { id: 2, nom: 'Lefevre', prenom: 'Anne' },
-    ];
+    // Effect pour mettre à jour les dossiers filtrés quand les dossiers changent
+    useEffect(() => {
+        setFilteredDossiers(dossiers || []);
+    }, [dossiers]);
 
     const statusFilters = [
-        { id: 'confirmé', label: 'Confirmé', color: 'green' },
-        { id: 'en_attente', label: 'En attente', color: 'orange' },
-        { id: 'annulé', label: 'Annulé', color: 'red' },
+        { id: 'actif', label: 'Actif', color: 'green' },
+        { id: 'suspendu', label: 'Suspendu', color: 'orange' },
         { id: 'terminé', label: 'Terminé', color: 'blue' },
+        { id: 'archivé', label: 'Archivé', color: 'gray' },
     ];
 
-    const typeFilters = [
-        { id: 'consultation_suivi', label: 'Consultation de suivi' },
-        { id: 'echographie', label: 'Échographie' },
-        { id: 'consultation_prenatale', label: 'Consultation prénatale' },
-        { id: 'suivi_post_partum', label: 'Suivi post-partum' },
+    const trimestreFilters = [
+        { id: 't1', label: 'Premier trimestre (T1)' },
+        { id: 't2', label: 'Deuxième trimestre (T2)' },
+        { id: 't3', label: 'Troisième trimestre (T3)' },
+        { id: 'post-partum', label: 'Post-partum' },
     ];
 
-    // Effect pour filtrer les rendez-vous
+    const risqueFilters = [
+        { id: 'avec_risque', label: 'Grossesse à risque' },
+        { id: 'sans_risque', label: 'Grossesse normale' },
+    ];
+
+    // Effect pour filtrer les dossiers
     useEffect(() => {
-        let result = rendezVousData;
+        let result = dossiers || [];
 
         // Appliquer les filtres de statut
         if (activeFilters.length > 0) {
-            result = result.filter((rdv) => {
-                return activeFilters.includes(rdv.statut) || activeFilters.includes(rdv.type.toLowerCase().replace(/ /g, '_'));
+            result = result.filter((dossier) => {
+                const statusMatch = activeFilters.includes(dossier.statut_dossier.toLowerCase());
+                const trimestreMatch = activeFilters.includes(dossier.trimestre.toLowerCase());
+                const risqueMatch = activeFilters.includes(dossier.grossesse_a_risque ? 'avec_risque' : 'sans_risque');
+
+                return statusMatch || trimestreMatch || risqueMatch;
             });
         }
 
@@ -144,46 +101,49 @@ export default function RdvIndex() {
         if (searchTerm) {
             const term = searchTerm.toLowerCase();
             result = result.filter(
-                (rdv) =>
-                    rdv.patiente.nom.toLowerCase().includes(term) ||
-                    rdv.patiente.prenom.toLowerCase().includes(term) ||
-                    rdv.sage_femme.nom.toLowerCase().includes(term) ||
-                    rdv.type.toLowerCase().includes(term) ||
-                    rdv.motif?.toLowerCase().includes(term),
+                (dossier) =>
+                    dossier.patiente.nom.toLowerCase().includes(term) ||
+                    dossier.patiente.prenom.toLowerCase().includes(term) ||
+                    dossier.sage_femme.nom.toLowerCase().includes(term) ||
+                    dossier.facteurs_risque?.toLowerCase().includes(term) ||
+                    dossier.notes_importantes?.toLowerCase().includes(term),
             );
         }
 
-        setFilteredRendezVous(result);
-    }, [activeFilters, searchTerm, rendezVousData]);
+        setFilteredDossiers(result);
+    }, [activeFilters, searchTerm, dossiers]);
 
-    const handleViewRendezVous = (rdv: RendezVous): void => {
-        router.visit(`/rendez-vous/${rdv.id}`);
-    };
-
-    const handleDeleteRendezVous = (rdv: RendezVous): void => {
-        setSelectedRendezVous(rdv);
-        setIsDeleteDialogOpen(true);
-    };
-
-    const confirmDelete = (): void => {
-        if (selectedRendezVous) {
-            // router.delete(`/rendez-vous/${selectedRendezVous.id}`);
-            setIsDeleteDialogOpen(false);
-        }
+    const handleViewDossier = (dossier: DossierMedical): void => {
+        router.visit(`/dossiers/${dossier.id}`);
     };
 
     const handleDownload = (): void => {
         const csvContent = [
-            ['ID', 'Date', 'Heure', 'Type', 'Statut', 'Patiente', 'Sage-femme', 'Motif'],
-            ...filteredRendezVous.map((rdv) => [
-                rdv.id,
-                rdv.date,
-                rdv.heure,
-                rdv.type,
-                rdv.statut,
-                `${rdv.patiente.prenom} ${rdv.patiente.nom}`,
-                `${rdv.sage_femme.prenom} ${rdv.sage_femme.nom}`,
-                rdv.motif || 'N/A',
+            [
+                'ID',
+                'Patiente',
+                'Sage-femme',
+                'Statut',
+                'Trimestre',
+                'Âge grossesse (semaines)',
+                'Consultations',
+                'Examens',
+                'Grossesse à risque',
+                'Date création',
+                'Dernière consultation',
+            ],
+            ...filteredDossiers.map((dossier) => [
+                dossier.id,
+                `${dossier.patiente.prenom} ${dossier.patiente.nom}`,
+                `${dossier.sage_femme.prenom} ${dossier.sage_femme.nom}`,
+                dossier.statut_dossier,
+                dossier.trimestre,
+                dossier.age_grossesse_semaines,
+                dossier.nombre_consultations,
+                dossier.nombre_examens,
+                dossier.grossesse_a_risque ? 'Oui' : 'Non',
+                dossier.date_creation,
+                dossier.date_derniere_consultation || 'N/A',
             ]),
         ]
             .map((row) => row.join(','))
@@ -192,7 +152,7 @@ export default function RdvIndex() {
         const blob = new Blob([csvContent], { type: 'text/csv' });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
-        link.download = 'liste_rendez_vous.csv';
+        link.download = 'dossiers_medicaux.csv';
         link.click();
     };
 
@@ -213,29 +173,44 @@ export default function RdvIndex() {
 
     const getStatusBadgeStyles = (statut: string): string => {
         switch (statut.toLowerCase()) {
-            case 'confirmé':
+            case 'actif':
                 return 'bg-green-100 text-green-800 hover:bg-green-200';
-            case 'en_attente':
+            case 'suspendu':
                 return 'bg-orange-100 text-orange-800 hover:bg-orange-200';
-            case 'annulé':
-                return 'bg-red-100 text-red-800 hover:bg-red-200';
             case 'terminé':
                 return 'bg-blue-100 text-blue-800 hover:bg-blue-200';
+            case 'archivé':
+                return 'bg-gray-100 text-gray-800 hover:bg-gray-200';
             default:
                 return 'bg-gray-100 text-gray-800 hover:bg-gray-200';
         }
     };
 
+    const getTrimestreBadgeStyles = (trimestre: string): string => {
+        switch (trimestre.toLowerCase()) {
+            case 't1':
+                return 'bg-pink-100 text-pink-800';
+            case 't2':
+                return 'bg-purple-100 text-purple-800';
+            case 't3':
+                return 'bg-indigo-100 text-indigo-800';
+            case 'post-partum':
+                return 'bg-teal-100 text-teal-800';
+            default:
+                return 'bg-gray-100 text-gray-800';
+        }
+    };
+
     const getAvatarStyles = (statut: string): string => {
         switch (statut.toLowerCase()) {
-            case 'confirmé':
+            case 'actif':
                 return 'bg-green-100 text-green-500';
-            case 'en_attente':
+            case 'suspendu':
                 return 'bg-orange-100 text-orange-500';
-            case 'annulé':
-                return 'bg-red-100 text-red-500';
             case 'terminé':
                 return 'bg-blue-100 text-blue-500';
+            case 'archivé':
+                return 'bg-gray-100 text-gray-500';
             default:
                 return 'bg-gray-100 text-gray-500';
         }
@@ -245,49 +220,28 @@ export default function RdvIndex() {
         return `${prenom.charAt(0)}${nom.charAt(0)}`.toUpperCase();
     };
 
-    const formatDate = (dateString: string): string => {
-        return new Date(dateString).toLocaleDateString('fr-FR', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-        });
-    };
-
-    const formatTime = (timeString: string): string => {
-        return timeString;
-    };
-
-    const getTypeIcon = (type: string): JSX.Element => {
-        if (type.toLowerCase().includes('échographie')) {
-            return <Calendar className="h-4 w-4" />;
-        }
-        if (type.toLowerCase().includes('suivi')) {
-            return <UserCheck className="h-4 w-4" />;
-        }
-        return <Clock className="h-4 w-4" />;
+    const formatDate = (dateString: string | null): string => {
+        if (!dateString) return 'N/A';
+        return new Date(dateString).toLocaleDateString('fr-FR');
     };
 
     return (
         <Sidebar>
-            <Head title="Rendez-vous" />
+            <Head title="Dossiers Médicaux" />
 
             <div className="py-6">
                 <div className="mx-auto max-w-7xl">
                     <Card className="mb-6 border border-gray-100 shadow-sm">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-xl font-bold text-gray-800">Gestion des Rendez-vous</CardTitle>
+                            <CardTitle className="text-xl font-bold text-gray-800">Dossiers Médicaux</CardTitle>
                             <div className="flex items-center gap-2">
                                 <Button onClick={handleDownload} variant="outline" className="border-pink-200 text-pink-600 hover:bg-pink-50">
                                     <Download className="mr-2 h-4 w-4" />
                                     Télécharger
                                 </Button>
-                                <Button
-                                    className="bg-pink-500 text-white transition-colors hover:bg-pink-600"
-                                    onClick={() => setIsAddModalOpen(true)}
-                                >
+                                <Button className="bg-pink-500 text-white transition-colors hover:bg-pink-600">
                                     <Plus className="mr-2 h-4 w-4" />
-                                    Nouveau rendez-vous
+                                    Nouveau dossier
                                 </Button>
                             </div>
                         </CardHeader>
@@ -300,7 +254,7 @@ export default function RdvIndex() {
                                     <div className="relative w-full md:w-96">
                                         <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
                                         <Input
-                                            placeholder="Rechercher un rendez-vous..."
+                                            placeholder="Rechercher un dossier..."
                                             value={searchTerm}
                                             onChange={(e) => setSearchTerm(e.target.value)}
                                             className="w-full py-2 pr-4 pl-10"
@@ -325,7 +279,7 @@ export default function RdvIndex() {
                                                 </Button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="end" className="w-56">
-                                                <DropdownMenuLabel>Statut</DropdownMenuLabel>
+                                                <DropdownMenuLabel>Statut du dossier</DropdownMenuLabel>
                                                 <DropdownMenuSeparator />
                                                 {statusFilters.map((filter) => (
                                                     <DropdownMenuCheckboxItem
@@ -338,9 +292,22 @@ export default function RdvIndex() {
                                                     </DropdownMenuCheckboxItem>
                                                 ))}
                                                 <DropdownMenuSeparator />
-                                                <DropdownMenuLabel>Type de rendez-vous</DropdownMenuLabel>
+                                                <DropdownMenuLabel>Trimestre</DropdownMenuLabel>
                                                 <DropdownMenuSeparator />
-                                                {typeFilters.map((filter) => (
+                                                {trimestreFilters.map((filter) => (
+                                                    <DropdownMenuCheckboxItem
+                                                        key={filter.id}
+                                                        checked={activeFilters.includes(filter.id)}
+                                                        onCheckedChange={() => toggleFilter(filter.id)}
+                                                        className="cursor-pointer"
+                                                    >
+                                                        {filter.label}
+                                                    </DropdownMenuCheckboxItem>
+                                                ))}
+                                                <DropdownMenuSeparator />
+                                                <DropdownMenuLabel>Niveau de risque</DropdownMenuLabel>
+                                                <DropdownMenuSeparator />
+                                                {risqueFilters.map((filter) => (
                                                     <DropdownMenuCheckboxItem
                                                         key={filter.id}
                                                         checked={activeFilters.includes(filter.id)}
@@ -370,8 +337,9 @@ export default function RdvIndex() {
                                     <div className="mt-3 flex flex-wrap gap-2">
                                         {activeFilters.map((filter) => {
                                             const statusFilter = statusFilters.find((f) => f.id === filter);
-                                            const typeFilter = typeFilters.find((f) => f.id === filter);
-                                            const filterLabel = statusFilter?.label || typeFilter?.label || filter;
+                                            const trimestreFilter = trimestreFilters.find((f) => f.id === filter);
+                                            const risqueFilter = risqueFilters.find((f) => f.id === filter);
+                                            const filterLabel = statusFilter?.label || trimestreFilter?.label || risqueFilter?.label || filter;
                                             return (
                                                 <Badge
                                                     key={filter}
@@ -400,87 +368,95 @@ export default function RdvIndex() {
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
-                                            <TableHead>Date & Heure</TableHead>
                                             <TableHead>Patiente</TableHead>
-                                            <TableHead>Type</TableHead>
                                             <TableHead>Sage-femme</TableHead>
                                             <TableHead>Statut</TableHead>
-                                            <TableHead>Motif</TableHead>
+                                            <TableHead>Grossesse</TableHead>
+                                            <TableHead>Suivi</TableHead>
+                                            <TableHead>Dernière consultation</TableHead>
                                             <TableHead className="text-right">Actions</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {filteredRendezVous.length === 0 ? (
+                                        {filteredDossiers.length === 0 ? (
                                             <TableRow>
                                                 <TableCell colSpan={7} className="py-8 text-center text-gray-500">
-                                                    Aucun rendez-vous trouvé
+                                                    Aucun dossier trouvé
                                                 </TableCell>
                                             </TableRow>
                                         ) : (
-                                            filteredRendezVous.map((rdv) => (
-                                                <TableRow key={rdv.id} className="hover:bg-gray-50">
+                                            filteredDossiers.map((dossier) => (
+                                                <TableRow key={dossier.id} className="hover:bg-gray-50">
                                                     <TableCell>
                                                         <div className="flex items-center gap-3">
-                                                            <div className={`${getAvatarStyles(rdv.statut)} rounded-lg p-2`}>
-                                                                {getTypeIcon(rdv.type)}
-                                                            </div>
-                                                            <div>
-                                                                <div className="font-medium">{formatDate(rdv.date)}</div>
-                                                                <div className="flex items-center gap-1 text-sm text-gray-500">
-                                                                    <Clock className="h-3 w-3" />
-                                                                    {formatTime(rdv.heure)}
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <div className="flex items-center gap-3">
-                                                            <Avatar className="border border-white shadow-sm">
-                                                                <AvatarFallback>{getInitials(rdv.patiente.nom, rdv.patiente.prenom)}</AvatarFallback>
+                                                            <Avatar
+                                                                className={`${getAvatarStyles(dossier.statut_dossier)} border border-white shadow-sm`}
+                                                            >
+                                                                <AvatarFallback>
+                                                                    {getInitials(dossier.patiente.nom, dossier.patiente.prenom)}
+                                                                </AvatarFallback>
                                                             </Avatar>
                                                             <div>
                                                                 <div className="font-medium">
-                                                                    {rdv.patiente.prenom} {rdv.patiente.nom}
+                                                                    {dossier.patiente.prenom} {dossier.patiente.nom}
                                                                 </div>
                                                                 <div className="text-sm text-gray-500">
-                                                                    {rdv.patiente.age} ans • {rdv.patiente.numero_telephone}
+                                                                    {dossier.patiente.age} ans • Groupe {dossier.patiente.groupe_sanguin}
                                                                 </div>
+                                                                {dossier.date_accouchement_prevue && (
+                                                                    <div className="text-sm text-pink-600">
+                                                                        Accouchement prévu: {formatDate(dossier.date_accouchement_prevue)}
+                                                                    </div>
+                                                                )}
                                                             </div>
                                                         </div>
                                                     </TableCell>
                                                     <TableCell>
-                                                        <div className="font-medium">{rdv.type}</div>
-                                                    </TableCell>
-                                                    <TableCell>
                                                         <div className="text-sm">
-                                                            {rdv.sage_femme.prenom} {rdv.sage_femme.nom}
+                                                            {dossier.sage_femme.prenom} {dossier.sage_femme.nom}
                                                         </div>
                                                     </TableCell>
                                                     <TableCell>
-                                                        <Badge className={`${getStatusBadgeStyles(rdv.statut)} px-2 py-1`}>{rdv.statut}</Badge>
+                                                        <Badge className={`${getStatusBadgeStyles(dossier.statut_dossier)} px-2 py-1`}>
+                                                            {dossier.statut_dossier}
+                                                        </Badge>
+                                                        {dossier.grossesse_a_risque && (
+                                                            <Badge className="ml-2 bg-red-100 px-2 py-1 text-red-800">À risque</Badge>
+                                                        )}
                                                     </TableCell>
                                                     <TableCell>
-                                                        <div className="max-w-32 truncate text-sm text-gray-600">{rdv.motif || 'N/A'}</div>
+                                                        <div className="space-y-1">
+                                                            <Badge className={`${getTrimestreBadgeStyles(dossier.trimestre)} px-2 py-1`}>
+                                                                {dossier.trimestre}
+                                                            </Badge>
+                                                            {dossier.age_grossesse_semaines > 0 && (
+                                                                <div className="text-sm text-gray-500">{dossier.age_grossesse_semaines} semaines</div>
+                                                            )}
+                                                        </div>
                                                     </TableCell>
+                                                    <TableCell>
+                                                        <div className="text-sm">
+                                                            <div className="flex items-center gap-2">
+                                                                <UserCheck className="h-3 w-3 text-gray-400" />
+                                                                <span>{dossier.nombre_consultations} consultations</span>
+                                                            </div>
+                                                            <div className="mt-1 flex items-center gap-2">
+                                                                <FileText className="h-3 w-3 text-gray-400" />
+                                                                <span>{dossier.nombre_examens} examens</span>
+                                                            </div>
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell className="text-gray-600">{formatDate(dossier.date_derniere_consultation)}</TableCell>
                                                     <TableCell className="text-right">
                                                         <div className="flex justify-end gap-1">
                                                             <Button
                                                                 variant="ghost"
                                                                 size="icon"
-                                                                onClick={() => handleViewRendezVous(rdv)}
+                                                                onClick={() => handleViewDossier(dossier)}
                                                                 className="text-gray-600 hover:bg-blue-50 hover:text-blue-600"
-                                                                title="Voir les détails"
+                                                                title="Consulter le dossier"
                                                             >
                                                                 <Eye className="h-4 w-4" />
-                                                            </Button>
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="icon"
-                                                                onClick={() => handleDeleteRendezVous(rdv)}
-                                                                className="text-gray-600 hover:bg-red-50 hover:text-red-600"
-                                                                title="Annuler le rendez-vous"
-                                                            >
-                                                                <Trash2 className="h-4 w-4" />
                                                             </Button>
                                                         </div>
                                                     </TableCell>
@@ -491,54 +467,13 @@ export default function RdvIndex() {
                                 </Table>
                             </div>
 
-                            <div className="border-t border-gray-100 p-4 text-sm text-gray-500">{filteredRendezVous.length} rendez-vous au total</div>
+                            <div className="border-t border-gray-100 p-4 text-sm text-gray-500">
+                                {filteredDossiers.length} dossier{filteredDossiers.length !== 1 ? 's' : ''} au total
+                            </div>
                         </CardContent>
                     </Card>
                 </div>
             </div>
-
-            {/* Dialog pour annuler un rendez-vous */}
-            <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle className="text-xl font-bold text-red-600">Annuler le rendez-vous</DialogTitle>
-                    </DialogHeader>
-                    {selectedRendezVous && (
-                        <div className="space-y-4">
-                            <div className="rounded-lg border border-red-100 bg-red-50 p-4">
-                                <p className="font-medium">
-                                    Êtes-vous sûr de vouloir annuler le rendez-vous de{' '}
-                                    <span className="font-bold">
-                                        {selectedRendezVous.patiente.prenom} {selectedRendezVous.patiente.nom}
-                                    </span>{' '}
-                                    du {formatDate(selectedRendezVous.date)} à {selectedRendezVous.heure} ?
-                                </p>
-                                <p className="mt-2 text-sm text-gray-600">Cette action modifiera le statut du rendez-vous en "Annulé".</p>
-                            </div>
-                            <div className="flex justify-end gap-3">
-                                <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
-                                    Retour
-                                </Button>
-                                <Button variant="destructive" onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">
-                                    Annuler le rendez-vous
-                                </Button>
-                            </div>
-                        </div>
-                    )}
-                </DialogContent>
-            </Dialog>
-
-            {/* Modal d'ajout de rendez-vous */}
-            <AddRendezVousModal
-                isOpen={isAddModalOpen}
-                onClose={() => setIsAddModalOpen(false)}
-                patientes={patientes}
-                sagesFemmes={sagesFemmes}
-                onComplete={() => {
-                    // Rafraîchir la liste des rendez-vous
-                    // router.reload();
-                }}
-            />
         </Sidebar>
     );
 }

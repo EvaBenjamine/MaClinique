@@ -48,8 +48,7 @@ type DashboardProps = {
 };
 
 export default function Dashboard() {
-    const { patientesCount, usersCount, consultations, CPN, CPP, autres, Jan, Fev, Mar, Avr, Mai, Juin, Juil, Aout, Sep, Oct, Nov, Dec } =
-        usePage<DashboardProps>().props;
+    const { patientesCount, CPN, CPP, autres, Jan, Fev, Mar, Avr, Mai, Juin, Juil, Aout, Sep, Oct, Nov, Dec } = usePage<DashboardProps>().props;
 
     // Données pour les graphiques
     const dataBarChart = {

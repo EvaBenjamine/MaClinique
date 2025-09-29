@@ -61,6 +61,87 @@ class PatienteController extends Controller
     }
 
     /**
+     * Afficher la page d'index des dossiers médicaux
+     */
+    public function indexDossiers()
+    {
+        $dossiers = DossierPatient::with(['patiente.user', 'sageFemme.user', 'consultations', 'examens'])
+            ->get()
+            ->map(function ($dossier) {
+                try {
+                    $ageGrossesse = $dossier->ageGrossesseSemaines() ?? 0;
+                    $trimestre = $dossier->trimestre() ?? 'Non défini';
+                    
+                    return [
+                        'id' => $dossier->id,
+                        'patiente' => [
+                            'id' => $dossier->patiente->id,
+                            'nom' => $dossier->patiente->user->nom,
+                            'prenom' => $dossier->patiente->user->prenom,
+                            'age' => $dossier->patiente->age,
+                            'numero_telephone' => $dossier->patiente->numero_telephone ?? 'N/A',
+                            'groupe_sanguin' => $dossier->patiente->groupe_sanguin ?? 'N/A',
+                        ],
+                        'sage_femme' => [
+                            'id' => $dossier->sageFemme->id,
+                            'nom' => $dossier->sageFemme->user->nom,
+                            'prenom' => $dossier->sageFemme->user->prenom,
+                        ],
+                        'statut_dossier' => $dossier->statut_dossier ?? 'Actif',
+                        'date_creation' => $dossier->created_at->format('Y-m-d'),
+                        'date_derniere_consultation' => $dossier->date_derniere_consultation,
+                        'date_accouchement_prevue' => $dossier->date_accouchement_prevue,
+                        'trimestre' => $trimestre,
+                        'age_grossesse_semaines' => $ageGrossesse,
+                        'nombre_consultations' => $dossier->consultations->count(),
+                        'nombre_examens' => $dossier->examens->count(),
+                        'grossesse_a_risque' => $dossier->grossesse_a_risque ?? false,
+                        'facteurs_risque' => $dossier->facteurs_risque,
+                        'notes_importantes' => $dossier->notes_importantes,
+                    ];
+                } catch (\Exception $e) {
+                    Log::error('Erreur lors du traitement du dossier ID: ' . $dossier->id, [
+                        'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString()
+                    ]);
+                    
+                    // Retourner des données par défaut en cas d'erreur
+                    return [
+                        'id' => $dossier->id,
+                        'patiente' => [
+                            'id' => $dossier->patiente->id ?? 0,
+                            'nom' => $dossier->patiente->user->nom ?? 'Nom inconnu',
+                            'prenom' => $dossier->patiente->user->prenom ?? 'Prénom inconnu',
+                            'age' => $dossier->patiente->age ?? 0,
+                            'numero_telephone' => 'N/A',
+                            'groupe_sanguin' => 'N/A',
+                        ],
+                        'sage_femme' => [
+                            'id' => 0,
+                            'nom' => 'Non assigné',
+                            'prenom' => '',
+                        ],
+                        'statut_dossier' => 'Erreur',
+                        'date_creation' => $dossier->created_at->format('Y-m-d'),
+                        'date_derniere_consultation' => null,
+                        'date_accouchement_prevue' => null,
+                        'trimestre' => 'Non défini',
+                        'age_grossesse_semaines' => 0,
+                        'nombre_consultations' => 0,
+                        'nombre_examens' => 0,
+                        'grossesse_a_risque' => false,
+                        'facteurs_risque' => null,
+                        'notes_importantes' => 'Erreur lors du chargement des données',
+                    ];
+                }
+            });
+
+        return Inertia::render('dossiers/index', [
+            'dossiers' => $dossiers,
+        ]);
+    }
+
+    /**
      * Afficher le formulaire de création d'une patiente
      */
     public function create()
