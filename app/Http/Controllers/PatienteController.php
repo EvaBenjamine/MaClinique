@@ -314,7 +314,6 @@ class PatienteController extends Controller
     public function storeConsultation(Request $request){
         $validated = $request->validate([
             'dossier_patient_id' => 'required|exists:dossier_patients,id',
-            'sage_femme_id' => 'required|exists:sage_femmes,id',
             'date' => 'required|date',
             'type_consultation' => 'required|string|max:255',
             'poids' => 'nullable|numeric',
@@ -335,7 +334,7 @@ class PatienteController extends Controller
             // Créer la consultation
             $consultation = Consultation::create([
                 'dossier_patient_id' => $validated['dossier_patient_id'],
-                'sage_femme_id' => $validated['sage_femme_id'],
+                'sage_femme_id' => auth()->user()->id,
                 'date' => $validated['date'],
                 'type_consultation' => $validated['type_consultation'],
                 'poids' => $validated['poids'] ?? null,
