@@ -15,6 +15,7 @@ use App\Models\Document;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
@@ -331,10 +332,17 @@ class PatienteController extends Controller
         try {
             DB::beginTransaction();
 
+            // Récupérer l'ID de la sage-femme à partir de l'utilisateur connecté
+            $sageFemme = SageFemme::where('user_id', auth()->user()->id)->first();
+
+            if (!$sageFemme) {
+                throw new \Exception('Utilisateur non autorisé à créer des consultations.');
+            }
+
             // Créer la consultation
             $consultation = Consultation::create([
                 'dossier_patient_id' => $validated['dossier_patient_id'],
-                'sage_femme_id' => auth()->user()->id,
+                'sage_femme_id' => $sageFemme->id,
                 'date' => $validated['date'],
                 'type_consultation' => $validated['type_consultation'],
                 'poids' => $validated['poids'] ?? null,
@@ -359,6 +367,15 @@ class PatienteController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
+
+            // Log l'erreur pour le débogage
+            \Log::error('Erreur lors de l\'enregistrement de la consultation', [
+                'user_id' => auth()->user()->id ?? 'non connecté',
+                'request_data' => $request->all(),
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
             return back()->withErrors(['error' => 'Erreur lors de l\'enregistrement de la consultation: ' . $e->getMessage()]);
         }
 
