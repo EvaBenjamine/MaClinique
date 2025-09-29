@@ -1,5 +1,5 @@
 import { Head, useForm } from '@inertiajs/react';
-import { LoaderCircle } from 'lucide-react';
+import { Loader } from 'lucide-react';
 import { FormEventHandler } from 'react';
 
 import InputError from '@/components/input-error';
@@ -109,7 +109,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                                 </Label>
                             </div>
                             <Button type="submit" className="w-full bg-pink-600 hover:bg-pink-500" disabled={processing}>
-                                {processing && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
+                                {processing && <Loader className="mr-2 h-4 w-4 animate-spin" />}
                                 Se connecter
                             </Button>
                         </form>

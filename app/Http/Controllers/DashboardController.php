@@ -91,14 +91,80 @@ class DashboardController extends Controller
             'Dec' => $Dec,
         ]);
     }
-
+    
+    /**
+     * Récupère les données pour le graphique des patientes par tranche d'âge
+     */
+    private function getPatientesChartData()
+    {
+        // Définir les tranches d'âge
+        $ageRanges = [
+            '18-25 ans' => [18, 25],
+            '26-35 ans' => [26, 35],
+            '36-45 ans' => [36, 45],
+            '46+ ans' => [46, 150]
+        ];
+        
+        $labels = [];
+        $values = [];
+        
+        // Compter les patientes par tranche d'âge
+        foreach ($ageRanges as $label => $range) {
+            $count = Patiente::whereBetween('age', $range)->count();
+            $labels[] = $label;
+            $values[] = $count;
+        }
+        
+        return [
+            'labels' => $labels,
+            'values' => $values,
+        ];
+    }
+    
+    /**
+     * Récupère les rendez-vous pour le calendrier du dashboard
+     */
+    private function getRendezVousData()
+    {
+        $now = Carbon::now();
+        $weekStart = $now->copy()->startOfWeek();
+        $weekEnd = $now->copy()->endOfWeek();
+        
+        return RendezVous::with(['patiente.user', 'sageFemme.user'])
+            ->whereBetween('date', [$weekStart->toDateString(), $weekEnd->toDateString()])
+            ->where('statut', '!=', 'annulé')
+            ->orderBy('date')
+            ->orderBy('heure')
+            ->get()
+            ->map(function ($rdv) {
+                return [
+                    'id' => $rdv->id,
+                    'title' => $rdv->motif,
+                    'patiente' => $rdv->patiente->user->nom . ' ' . $rdv->patiente->user->prenom,
+                    'sageFemme' => $rdv->sageFemme->user->nom . ' ' . $rdv->sageFemme->user->prenom,
+                    'start' => Carbon::parse($rdv->date . ' ' . $rdv->heure)->toIso8601String(),
+                    'end' => Carbon::parse($rdv->date . ' ' . $rdv->heure)->addMinutes(30)->toIso8601String(),
+                    'statut' => $rdv->statut,
+                ];
+            });
+    }
+    
     /**
      * Afficher les détails d'une patiente
      */
     public function show($id)
     {
-        $patiente = Patiente::with(['user', 'dossierPatient.consultations', 'dossierPatient.examens', 'dossierPatient.prescriptions', 'dossierPatient.rendezVous', 'dossierPatient.documents', 'dossierPatient.notes', 'dossierPatient.accouchements'])->findOrFail($id);
-        return inertia('Patientes/Show', [
+        $patiente = Patiente::with([
+            'user', 
+            'dossierPatient.consultations', 
+            'dossierPatient.examens', 
+            'dossierPatient.prescriptions', 
+            'dossierPatient.rendezVous', 
+            'dossierPatient.documents', 
+            'dossierPatient.notes'
+        ])->findOrFail($id);
+        
+        return Inertia::render('Patientes/Show', [
             'patiente' => $patiente,
         ]);
     }

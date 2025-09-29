@@ -9,8 +9,22 @@ interface SidebarProps {
     children: React.ReactNode;
 }
 
+type AuthUser = {
+    nom: string;
+    prenom: string;
+    role?: string;
+    // Ajoutez d'autres propriétés utilisateur si nécessaire
+};
+
+type PageProps = {
+    auth: {
+        user: AuthUser;
+    };
+    // Ajoutez d'autres propriétés de page si nécessaire
+};
+
 export default function Sidebar({ children }: SidebarProps) {
-    const { url, props } = usePage();
+    const { url, props } = usePage<PageProps>();
     const user = props.auth?.user;
 
     const isActive = (path: string) => url.startsWith(path);

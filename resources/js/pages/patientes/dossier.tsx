@@ -1,45 +1,78 @@
-import DossierPatientTabs from '@/components/dossier-medical/dossier-patient-tabs';
+import DossierPatientRefactored from '@/components/dossier/dossier-patient-refactored';
 import Sidebar from '@/components/Sidebar';
 import { Head, usePage } from '@inertiajs/react';
 
-export default function DossierPatiente() {
-    const { auth, patiente, consultations, examens, prescriptions, documents, dossier, sage_femme, trimestre, age_grossesse_semaines, sages_femmes } =
+export default function Page() {
+    const { patiente, consultations, examens, prescriptions, documents, dossier, sage_femme, trimestre, age_grossesse_semaines, sages_femmes } =
         usePage().props;
 
+    // Add a type assertion for dossier
+    const typedDossier = dossier as {
+        id: number;
+        patiente_id: number;
+        sage_femme_id: number;
+        date_derniere_regle: string;
+        date_accouchement_prevue: string;
+        grossesse_multiple: boolean;
+        nombre_foetus: number;
+        grossesse_a_risque: boolean;
+        facteurs_risque: string;
+        nombre_grossesses_anterieures: number;
+        nombre_accouchements: number;
+        nombre_avortements: number;
+        nombre_enfants_vivants: number;
+        antecedents_medicaux: string;
+        antecedents_chirurgicaux: string;
+        antecedents_familiaux: string;
+        antecedents_gynecologiques: string;
+        antecedents_obstetricaux: string;
+        allergies: string;
+        traitements_en_cours: string;
+        maladies_chroniques: string;
+        tabac: boolean;
+        alcool: boolean;
+        activite_physique: string;
+        regime_alimentaire: string;
+        statut_dossier: string;
+        date_derniere_consultation: string;
+        notes_importantes: string;
+        recommandations_particulieres: string;
+    };
+
     const dossierP = {
-        id: dossier.id,
-        patiente_id: dossier.patiente_id,
-        sage_femme_id: dossier.sage_femme_id,
-        date_derniere_regle: dossier.date_derniere_regle,
-        date_accouchement_prevue: dossier.date_accouchement_prevue,
-        grossesse_multiple: dossier.grossesse_multiple,
-        nombre_foetus: dossier.nombre_foetus,
-        grossesse_a_risque: dossier.grossesse_a_risque,
-        facteurs_risque: dossier.facteurs_risque,
-        nombre_grossesses_anterieures: dossier.nombre_grossesses_anterieures,
-        nombre_accouchements: dossier.nombre_accouchements,
-        nombre_avortements: dossier.nombre_avortements,
-        nombre_enfants_vivants: dossier.nombre_enfants_vivants,
-        antecedents_medicaux: dossier.antecedents_medicaux,
-        antecedents_chirurgicaux: dossier.antecedents_chirurgicaux,
-        antecedents_familiaux: dossier.antecedents_familiaux,
-        antecedents_gynecologiques: dossier.antecedents_gynecologiques,
-        antecedents_obstetricaux: dossier.antecedents_obstetricaux,
-        allergies: dossier.allergies,
-        traitements_en_cours: dossier.traitements_en_cours,
-        maladies_chroniques: dossier.maladies_chroniques,
-        tabac: dossier.tabac,
-        alcool: dossier.alcool,
-        activite_physique: dossier.activite_physique,
-        regime_alimentaire: dossier.regime_alimentaire,
-        statut_dossier: dossier.statut_dossier,
-        date_derniere_consultation: dossier.date_derniere_consultation,
-        notes_importantes: dossier.notes_importantes,
-        recommandations_particulieres: dossier.recommandations_particulieres,
+        id: typedDossier.id,
+        patiente_id: typedDossier.patiente_id,
+        sage_femme_id: typedDossier.sage_femme_id,
+        date_derniere_regle: typedDossier.date_derniere_regle,
+        date_accouchement_prevue: typedDossier.date_accouchement_prevue,
+        grossesse_multiple: typedDossier.grossesse_multiple,
+        nombre_foetus: typedDossier.nombre_foetus,
+        grossesse_a_risque: typedDossier.grossesse_a_risque,
+        facteurs_risque: typedDossier.facteurs_risque,
+        nombre_grossesses_anterieures: typedDossier.nombre_grossesses_anterieures,
+        nombre_accouchements: typedDossier.nombre_accouchements,
+        nombre_avortements: typedDossier.nombre_avortements,
+        nombre_enfants_vivants: typedDossier.nombre_enfants_vivants,
+        antecedents_medicaux: typedDossier.antecedents_medicaux,
+        antecedents_chirurgicaux: typedDossier.antecedents_chirurgicaux,
+        antecedents_familiaux: typedDossier.antecedents_familiaux,
+        antecedents_gynecologiques: typedDossier.antecedents_gynecologiques,
+        antecedents_obstetricaux: typedDossier.antecedents_obstetricaux,
+        allergies: typedDossier.allergies,
+        traitements_en_cours: typedDossier.traitements_en_cours,
+        maladies_chroniques: typedDossier.maladies_chroniques,
+        tabac: typedDossier.tabac,
+        alcool: typedDossier.alcool,
+        activite_physique: typedDossier.activite_physique,
+        regime_alimentaire: typedDossier.regime_alimentaire,
+        statut_dossier: typedDossier.statut_dossier,
+        date_derniere_consultation: typedDossier.date_derniere_consultation,
+        notes_importantes: typedDossier.notes_importantes,
+        recommandations_particulieres: typedDossier.recommandations_particulieres,
         age_grossesse_semaines: age_grossesse_semaines,
         trimestre: trimestre,
-        sage_femme: sage_femme,
-        patiente: patiente,
+        sage_femme: sage_femme as { nom: string; prenom: string } | undefined,
+        patiente: patiente as { nom: string; prenom: string; age: number; numero_telephone: string; email: string } | undefined,
         consultations: consultations,
         examens: examens,
         prescriptions: prescriptions,
@@ -51,7 +84,7 @@ export default function DossierPatiente() {
             <Head title="Dossier médical" />
             <div className="py-6">
                 <div className="mx-auto max-w-7xl">
-                    <DossierPatientTabs dossier={dossierP} sages_femmes={sages_femmes} />
+                    <DossierPatientRefactored dossier={dossierP} sages_femmes={sages_femmes} />
                 </div>
             </div>
         </Sidebar>
