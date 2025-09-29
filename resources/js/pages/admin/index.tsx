@@ -1,4 +1,4 @@
-import { Inertia } from '@inertiajs/inertia';
+import { router } from '@inertiajs/react';
 import { Head, usePage } from '@inertiajs/react';
 import { ChevronDown, Eye, Pencil, Plus, Search, SlidersHorizontal, Trash2, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -107,7 +107,7 @@ export default function UsersIndex() {
 
     const confirmDelete = (): void => {
         if (selectedUser) {
-            Inertia.delete(route('users.destroy', selectedUser.id), {
+            router.delete(route('users.destroy', selectedUser.id), {
                 onSuccess: () => {
                     setIsDeleteDialogOpen(false);
                 },

@@ -1,7 +1,7 @@
 'use client';
 
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Inertia } from '@inertiajs/inertia';
+import { router } from '@inertiajs/react';
 import { Link, usePage } from '@inertiajs/react';
 import { Calendar, FileText, LayoutDashboard, LogOut, Stethoscope, User, Users } from 'lucide-react';
 
@@ -35,7 +35,7 @@ export default function Sidebar({ children }: SidebarProps) {
         }`;
 
     const handleLogout = () => {
-        Inertia.post('/logout');
+        router.post('/logout');
     };
 
     const getInitials = (nom: string, prenom: string): string => {

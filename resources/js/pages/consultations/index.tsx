@@ -1,5 +1,4 @@
-import { Inertia } from '@inertiajs/inertia';
-import { Head, usePage } from '@inertiajs/react';
+import { Head, usePage, router } from '@inertiajs/react';
 import { ChevronDown, Download, Eye, FileText, Search, SlidersHorizontal, Stethoscope, Trash2, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
@@ -118,11 +117,11 @@ export default function ConsultationsIndex() {
     }, [activeFilters, searchTerm, consultations]);
 
     const handleViewConsultation = (consultation: Consultation): void => {
-        Inertia.visit(`/consultations/${consultation.id}`);
+        router.visit(`/consultations/${consultation.id}`);
     };
 
     const handleEditConsultation = (consultation: Consultation): void => {
-        Inertia.visit(`/consultations/${consultation.id}/edit`);
+        router.visit(`/consultations/${consultation.id}/edit`);
     };
 
     const handleDeleteConsultation = (consultation: Consultation): void => {
@@ -132,7 +131,7 @@ export default function ConsultationsIndex() {
 
     const confirmDelete = (): void => {
         if (selectedConsultation) {
-            Inertia.delete(`/consultations/${selectedConsultation.id}`, {
+            router.delete(`/consultations/${selectedConsultation.id}`, {
                 onSuccess: () => {
                     setIsDeleteDialogOpen(false);
                 },

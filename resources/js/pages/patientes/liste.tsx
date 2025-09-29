@@ -1,5 +1,4 @@
-import { Inertia } from '@inertiajs/inertia';
-import { Head, usePage } from '@inertiajs/react';
+import { Head, usePage, router } from '@inertiajs/react';
 import { ChevronDown, Download, Eye, FileText, Plus, Search, SlidersHorizontal, Trash2, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
@@ -98,12 +97,12 @@ export default function PatientesIndex() {
 
     const handleViewDossier = (patiente: Patiente): void => {
         // Navigation vers le dossier de la patiente
-        Inertia.visit(`/dossiers/${patiente.id}`);
+        router.visit(`/dossiers/${patiente.id}`);
     };
 
     const handleCreateDossier = (patiente: Patiente): void => {
         // Navigation vers la création de dossier
-        Inertia.visit(`/patiente/${patiente.id}/dossier/nouveau`);
+        router.visit(`/patiente/${patiente.id}/dossier/nouveau`);
     };
 
     const handleDeletePatiente = (patiente: Patiente): void => {
@@ -113,7 +112,7 @@ export default function PatientesIndex() {
 
     const confirmDelete = (): void => {
         if (selectedPatiente) {
-            Inertia.delete(`/patiente/${selectedPatiente.id}`, {
+            router.delete(`/patiente/${selectedPatiente.id}`, {
                 onSuccess: () => {
                     setIsDeleteDialogOpen(false);
                 },
