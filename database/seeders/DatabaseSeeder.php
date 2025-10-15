@@ -13,13 +13,25 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-
+        // Créer les utilisateurs admin de test
         User::factory()->create([
             'nom' => 'Super',
             'prenom' => 'Admin',
-            'email' => 'admin@dev.com',
+            'email' => 'admin@edm.com',
+            'role' => 'admin',
         ]);
 
+        User::factory()->create([
+            'nom' => 'Hiensontie',
+            'prenom' => 'Agnes',
+            'email' => 'agnes@edm.com',
+            'role' => 'admin',
+        ]);
 
+        // Appeler le seeder des sages-femmes et secrétaires
+        $this->call([
+            SageFemmeSeeder::class,
+            SecretaireSeeder::class,
+        ]);
     }
 }

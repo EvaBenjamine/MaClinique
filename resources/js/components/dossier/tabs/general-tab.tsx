@@ -51,10 +51,12 @@ export function GeneralTab() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
-                        <InfoItem label="Grossesses antérieures" value={dossier.nombre_grossesses_anterieures} />
-                        <InfoItem label="Accouchements" value={dossier.nombre_accouchements} />
-                        <InfoItem label="Avortements" value={dossier.nombre_avortements} />
-                        <InfoItem label="Enfants vivants" value={dossier.nombre_enfants_vivants} />
+                        <InfoItem label="Gestité (G)" value={dossier.gestite} />
+                        <InfoItem label="Parité (P)" value={dossier.parite} />
+                        <InfoItem label="Fausses couches" value={dossier.fausses_couches} />
+                        <InfoItem label="Enfants vivants (EV)" value={dossier.ev} />
+                        <InfoItem label="Morts-nés" value={dossier.morts_nes} />
+                        <InfoItem label="Décédés" value={dossier.decedes} />
                     </div>
                     {dossier.antecedents_obstetricaux && <InfoItem label="Détails antécédents" value={dossier.antecedents_obstetricaux} />}
                 </CardContent>

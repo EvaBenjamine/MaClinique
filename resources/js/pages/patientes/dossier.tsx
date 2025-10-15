@@ -14,8 +14,8 @@ type PageProps = {
         profession?: string;
         situation_matrimoniale?: string;
         groupe_sanguin?: string;
-        numero_urgence?: string;
-        adresse?: string;
+        numero_conjoint?: string;
+        quartier?: string;
     };
     dossier: {
         id: number;
@@ -27,10 +27,12 @@ type PageProps = {
         nombre_foetus: number | null;
         grossesse_a_risque: boolean;
         facteurs_risque: string | null;
-        nombre_grossesses_anterieures: number;
-        nombre_accouchements: number;
-        nombre_avortements: number;
-        nombre_enfants_vivants: number;
+        gestite: number;
+        parite: number;
+        fausses_couches: number;
+        ev: number;
+        morts_nes: number;
+        decedes: number;
         antecedents_medicaux: string | null;
         antecedents_chirurgicaux: string | null;
         antecedents_familiaux: string | null;

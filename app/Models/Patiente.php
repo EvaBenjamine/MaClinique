@@ -16,8 +16,8 @@ class Patiente extends Model
         'situation_matrimoniale',
         'groupe_sanguin',
         'numero_telephone',
-        'numero_urgence',
-        'adresse',
+        'numero_conjoint',
+        'quartier',
     ];
 
     // Relation avec User (1 patiente = 1 user)

@@ -19,8 +19,8 @@ return new class extends Migration
             $table->enum('situation_matrimoniale', ['celibataire', 'mariée', 'pacsée', 'divorcée', 'veuve']);
             $table->enum('groupe_sanguin', ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']);
             $table->string('numero_telephone', 20);
-            $table->string('numero_urgence', 20)->nullable();
-            $table->text('adresse');
+            $table->string('numero_conjoint', 20)->nullable();
+            $table->text('quartier');
             $table->timestamps();
         });
     }

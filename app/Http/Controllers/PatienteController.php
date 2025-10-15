@@ -71,7 +71,7 @@ class PatienteController extends Controller
                 try {
                     $ageGrossesse = $dossier->ageGrossesseSemaines() ?? 0;
                     $trimestre = $dossier->trimestre() ?? 'Non défini';
-                    
+
                     return [
                         'id' => $dossier->id,
                         'patiente' => [
@@ -104,7 +104,7 @@ class PatienteController extends Controller
                         'error' => $e->getMessage(),
                         'trace' => $e->getTraceAsString()
                     ]);
-                    
+
                     // Retourner des données par défaut en cas d'erreur
                     return [
                         'id' => $dossier->id,
@@ -168,24 +168,26 @@ class PatienteController extends Controller
         $validated = $request->validate([
             'nom' => 'required|string|max:255',
             'prenom' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
+            'email' => 'nullable|string|email|max:255',
             'age' => 'required|integer|min:1|max:150',
             'profession' => 'nullable|string|max:255',
             'situation_matrimoniale' => 'nullable|string|max:50',
             'groupe_sanguin' => 'nullable|string|max:10',
             'numero_telephone' => 'nullable|string|max:20',
-            'numero_urgence' => 'nullable|string|max:20',
-            'adresse' => 'nullable|string|max:255',
+            'numero_conjoint' => 'nullable|string|max:20',
+            'quartier' => 'nullable|string',
             'date_derniere_regle' => 'nullable|date',
             'date_accouchement_prevue' => 'nullable|date',
             'grossesse_multiple' => 'nullable|boolean',
             'nombre_foetus' => 'nullable|integer',
             'grossesse_a_risque' => 'nullable|boolean',
             'facteurs_risque' => 'nullable|string|max:255',
-            'nombre_grossesses_anterieures' => 'nullable|integer',
-            'nombre_accouchements' => 'nullable|integer',
-            'nombre_avortements' => 'nullable|integer',
-            'nombre_enfants_vivants' => 'nullable|integer',
+            'gestite' => 'nullable|integer|min:0',
+            'parite' => 'nullable|integer|min:0',
+            'fausses_couches' => 'nullable|integer|min:0',
+            'ev' => 'nullable|integer|min:0',
+            'morts_nes' => 'nullable|integer|min:0',
+            'decedes' => 'nullable|integer|min:0',
             'antecedents_medicaux' => 'nullable|string|max:500',
             'antecedents_chirurgicaux' => 'nullable|string|max:500',
             'antecedents_familiaux' => 'nullable|string|max:500',
@@ -207,11 +209,14 @@ class PatienteController extends Controller
         try {
             DB::beginTransaction();
 
+            // Générer un email automatique si non fourni
+            $email = $validated['email'] ?? 'patiente_' . uniqid() . '@edm.com';
+
             // Créer l'utilisateur
             $user = User::create([
                 'nom' => $validated['nom'],
                 'prenom' => $validated['prenom'],
-                'email' => $validated['email'],
+                'email' => $email,
                 'password' => Hash::make('password'),
                 'role' => 'patiente',
             ]);
@@ -224,8 +229,8 @@ class PatienteController extends Controller
                 'situation_matrimoniale' => $validated['situation_matrimoniale'] ?? null,
                 'groupe_sanguin' => $validated['groupe_sanguin'] ?? null,
                 'numero_telephone' => $validated['numero_telephone'] ?? null,
-                'numero_urgence' => $validated['numero_urgence'] ?? null,
-                'adresse' => $validated['adresse'] ?? null,
+                'numero_conjoint' => $validated['numero_conjoint'] ?? null,
+                'quartier' => $validated['quartier'] ?? null,
             ]);
 
             // Créer le dossier de la patiente
@@ -238,10 +243,12 @@ class PatienteController extends Controller
                 'nombre_foetus' => $validated['nombre_foetus'] ?? null,
                 'grossesse_a_risque' => $validated['grossesse_a_risque'] ?? false,
                 'facteurs_risque' => $validated['facteurs_risque'] ?? null,
-                'nombre_grossesses_anterieures' => $validated['nombre_grossesses_anterieures'] ?? 0,
-                'nombre_accouchements' => $validated['nombre_accouchements'] ?? 0,
-                'nombre_avortements' => $validated['nombre_avortements'] ?? 0,
-                'nombre_enfants_vivants' => $validated['nombre_enfants_vivants'] ?? 0,
+                'gestite' => $validated['gestite'] ?? 0,
+                'parite' => $validated['parite'] ?? 0,
+                'fausses_couches' => $validated['fausses_couches'] ?? 0,
+                'ev' => $validated['ev'] ?? 0,
+                'morts_nes' => $validated['morts_nes'] ?? 0,
+                'decedes' => $validated['decedes'] ?? 0,
                 'antecedents_medicaux' => $validated['antecedents_medicaux'] ?? null,
                 'antecedents_chirurgicaux' => $validated['antecedents_chirurgicaux'] ?? null,
                 'antecedents_familiaux' => $validated['antecedents_familiaux'] ?? null,
@@ -307,8 +314,8 @@ class PatienteController extends Controller
                 'situation_matrimoniale' => $patiente->situation_matrimoniale,
                 'groupe_sanguin' => $patiente->groupe_sanguin,
                 'numero_telephone' => $patiente->numero_telephone,
-                'numero_urgence' => $patiente->numero_urgence,
-                'adresse' => $patiente->adresse,
+                'numero_conjoint' => $patiente->numero_conjoint,
+                'quartier' => $patiente->quartier,
             ],
             'sage_femme' => $sage_femme,
             'consultations' => $consultations,
@@ -351,25 +358,28 @@ class PatienteController extends Controller
         $validated = $request->validate([
             'nom' => 'required|string|max:255',
             'prenom' => 'required|string|max:255',
-            'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($patiente->user_id)],
+            'email' => ['nullable', 'string', 'email', 'max:255', Rule::unique('users')->ignore($patiente->user_id)],
             'age' => 'required|integer|min:1|max:150',
             'profession' => 'nullable|string|max:255',
             'situation_matrimoniale' => 'nullable|string|max:50',
             'groupe_sanguin' => 'nullable|string|max:10',
             'numero_telephone' => 'nullable|string|max:20',
-            'numero_urgence' => 'nullable|string|max:20',
-            'adresse' => 'nullable|string|max:255',
+            'numero_conjoint' => 'nullable|string|max:20',
+            'quartier' => 'nullable|string',
             // Ajoutez les autres champs selon vos besoins...
         ]);
 
         try {
             DB::beginTransaction();
 
+            // Générer un email automatique si non fourni
+            $email = $validated['email'] ?? $patiente->user->email ?? 'patiente_' . uniqid() . '@ecoledemamans.bf';
+
             // Mettre à jour l'utilisateur
             $patiente->user->update([
                 'nom' => $validated['nom'],
                 'prenom' => $validated['prenom'],
-                'email' => $validated['email'],
+                'email' => $email,
             ]);
 
             // Mettre à jour la patiente
@@ -379,8 +389,8 @@ class PatienteController extends Controller
                 'situation_matrimoniale' => $validated['situation_matrimoniale'] ?? null,
                 'groupe_sanguin' => $validated['groupe_sanguin'] ?? null,
                 'numero_telephone' => $validated['numero_telephone'] ?? null,
-                'numero_urgence' => $validated['numero_urgence'] ?? null,
-                'adresse' => $validated['adresse'] ?? null,
+                'numero_conjoint' => $validated['numero_conjoint'] ?? null,
+                'quartier' => $validated['quartier'] ?? null,
             ]);
 
             DB::commit();

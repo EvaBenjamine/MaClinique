@@ -1,6 +1,5 @@
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -10,62 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useForm } from '@inertiajs/react';
 import { AlertCircle, ArrowLeft, ArrowRight, Loader2 } from 'lucide-react';
 import type React from 'react';
-import { useState } from 'react';
-
-interface FormData {
-    // Ajout de la signature d'index pour satisfaire FormDataType
-    [key: string]: string | number | boolean;
-
-    // Informations personnelles
-    nom: string;
-    prenom: string;
-    email: string;
-    password: string;
-    password_confirmation: string;
-    age: number | string;
-    profession: string;
-    situation_matrimoniale: string;
-    groupe_sanguin: string;
-    numero_telephone: string;
-    numero_urgence: string;
-    adresse: string;
-
-    // Informations grossesse
-    date_derniere_regle: string;
-    date_accouchement_prevue: string;
-    grossesse_multiple: boolean;
-    nombre_foetus: number | string;
-    grossesse_a_risque: boolean;
-    facteurs_risque: string;
-
-    // Antécédents obstétricaux
-    nombre_grossesses_anterieures: number | string;
-    nombre_accouchements: number | string;
-    nombre_avortements: number | string;
-    nombre_enfants_vivants: number | string;
-
-    // Antécédents médicaux
-    antecedents_medicaux: string;
-    antecedents_chirurgicaux: string;
-    antecedents_familiaux: string;
-    antecedents_gynecologiques: string;
-    antecedents_obstetricaux: string;
-    allergies: string;
-    traitements_en_cours: string;
-    maladies_chroniques: string;
-
-    // Mode de vie
-    tabac: boolean;
-    alcool: boolean;
-    activite_physique: string;
-    regime_alimentaire: string;
-
-    // Suivi médical
-    sage_femme_id: string;
-    statut_dossier: string;
-    notes_importantes: string;
-    recommandations_particulieres: string;
-}
+import { useEffect, useState } from 'react';
 
 interface SageFemme {
     id: number;
@@ -85,7 +29,7 @@ const steps = [
         id: 'personal',
         title: 'Informations personnelles',
         description: 'Informations de base de la patiente',
-        requiredFields: ['nom', 'prenom', 'email', 'password', 'password_confirmation', 'age'],
+        requiredFields: ['nom', 'prenom', 'age'],
     },
     {
         id: 'contact',
@@ -130,7 +74,7 @@ export default function AddPatienteModal({ isOpen, onClose, sagesFemmes, onCompl
     const [totalSteps] = useState<number>(steps.length);
 
     // Formulaire Inertia pour la soumission des données
-    const { data, setData, post, processing, errors, reset } = useForm<FormData>({
+    const { data, setData, post, processing, errors, reset } = useForm({
         // Informations personnelles
         nom: '',
         prenom: '',
@@ -142,22 +86,24 @@ export default function AddPatienteModal({ isOpen, onClose, sagesFemmes, onCompl
         situation_matrimoniale: '',
         groupe_sanguin: '',
         numero_telephone: '',
-        numero_urgence: '',
-        adresse: '',
+        numero_conjoint: '',
+        quartier: '',
 
         // Informations grossesse
         date_derniere_regle: '',
         date_accouchement_prevue: '',
-        grossesse_multiple: false,
+        grossesse_multiple: false as boolean,
         nombre_foetus: 1,
-        grossesse_a_risque: false,
+        grossesse_a_risque: false as boolean,
         facteurs_risque: '',
 
         // Antécédents obstétricaux
-        nombre_grossesses_anterieures: 0,
-        nombre_accouchements: 0,
-        nombre_avortements: 0,
-        nombre_enfants_vivants: 0,
+        gestite: 0,
+        parite: 0,
+        fausses_couches: 0,
+        ev: 0,
+        morts_nes: 0,
+        decedes: 0,
 
         // Antécédents médicaux
         antecedents_medicaux: '',
@@ -170,8 +116,8 @@ export default function AddPatienteModal({ isOpen, onClose, sagesFemmes, onCompl
         maladies_chroniques: '',
 
         // Mode de vie
-        tabac: false,
-        alcool: false,
+        tabac: false as boolean,
+        alcool: false as boolean,
         activite_physique: '',
         regime_alimentaire: '',
 
@@ -181,6 +127,14 @@ export default function AddPatienteModal({ isOpen, onClose, sagesFemmes, onCompl
         notes_importantes: '',
         recommandations_particulieres: '',
     });
+
+    // Réinitialiser le formulaire quand la modale s'ouvre
+    useEffect(() => {
+        if (isOpen) {
+            reset();
+            setStep(1);
+        }
+    }, [isOpen, reset]);
 
     // Gérer la soumission du formulaire
     const handleSubmit = (e: React.FormEvent) => {
@@ -192,23 +146,21 @@ export default function AddPatienteModal({ isOpen, onClose, sagesFemmes, onCompl
                 setStep(step + 1);
             }
         } else {
-            // Soumettre le formulaire
-            const cleanedData = {
+            // Soumettre le formulaire avec les données nettoyées
+            const formData = {
                 ...data,
-                age: Number(data.age),
-                nombre_foetus: Number(data.nombre_foetus),
-                nombre_grossesses_anterieures: Number(data.nombre_grossesses_anterieures),
-                nombre_accouchements: Number(data.nombre_accouchements),
-                nombre_avortements: Number(data.nombre_avortements),
-                nombre_enfants_vivants: Number(data.nombre_enfants_vivants),
-                // Convertir les booléens en valeurs appropriées pour Laravel
-                grossesse_multiple: data.grossesse_multiple ? 1 : 0,
-                grossesse_a_risque: data.grossesse_a_risque ? 1 : 0,
-                tabac: data.tabac ? 1 : 0,
-                alcool: data.alcool ? 1 : 0,
+                age: Number(data.age) || 0,
+                nombre_foetus: Number(data.nombre_foetus) || 1,
+                gestite: Number(data.gestite) || 0,
+                parite: Number(data.parite) || 0,
+                fausses_couches: Number(data.fausses_couches) || 0,
+                ev: Number(data.ev) || 0,
+                morts_nes: Number(data.morts_nes) || 0,
+                decedes: Number(data.decedes) || 0,
             };
 
             post(route('patientes.store'), {
+                ...formData,
                 onSuccess: () => {
                     handleClose();
                     onComplete();
@@ -233,19 +185,7 @@ export default function AddPatienteModal({ isOpen, onClose, sagesFemmes, onCompl
         // Validation personnalisée pour chaque étape
         switch (currentStepData.id) {
             case 'personal':
-                return Boolean(
-                    data.nom &&
-                        data.prenom &&
-                        data.email &&
-                        data.age &&
-                        data.password === data.password_confirmation &&
-                        !errors.nom &&
-                        !errors.prenom &&
-                        !errors.email &&
-                        !errors.password &&
-                        !errors.password_confirmation &&
-                        !errors.age,
-                );
+                return Boolean(data.nom && data.prenom && data.age && !errors.nom && !errors.prenom && !errors.age);
             case 'contact':
                 return Boolean(data.numero_telephone && !errors.numero_telephone);
             case 'pregnancy':
@@ -291,7 +231,7 @@ export default function AddPatienteModal({ isOpen, onClose, sagesFemmes, onCompl
 
                         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <div className="space-y-2">
-                                <Label className="text-pink-800" htmlFor="prenom">
+                                <Label className="text-sm font-medium text-pink-800" htmlFor="prenom">
                                     Prénom
                                 </Label>
                                 <Input
@@ -305,7 +245,7 @@ export default function AddPatienteModal({ isOpen, onClose, sagesFemmes, onCompl
                             </div>
 
                             <div className="space-y-2">
-                                <Label className="text-pink-800" htmlFor="nom">
+                                <Label className="text-sm font-medium text-pink-800" htmlFor="nom">
                                     Nom
                                 </Label>
                                 <Input
@@ -320,7 +260,7 @@ export default function AddPatienteModal({ isOpen, onClose, sagesFemmes, onCompl
                         </div>
 
                         <div className="space-y-2">
-                            <Label className="text-pink-800" htmlFor="email">
+                            <Label className="text-sm font-medium text-pink-800" htmlFor="email">
                                 Email
                             </Label>
                             <Input
@@ -334,9 +274,9 @@ export default function AddPatienteModal({ isOpen, onClose, sagesFemmes, onCompl
                             {errors.email && <p className="text-sm text-red-500">{errors.email}</p>}
                         </div>
 
-                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                             <div className="space-y-2">
-                                <Label className="text-pink-800" htmlFor="age">
+                                <Label className="text-sm font-medium text-pink-800" htmlFor="age">
                                     Âge
                                 </Label>
                                 <Input
@@ -353,7 +293,7 @@ export default function AddPatienteModal({ isOpen, onClose, sagesFemmes, onCompl
                             </div>
 
                             <div className="space-y-2">
-                                <Label className="text-pink-800" htmlFor="groupe_sanguin">
+                                <Label className="text-sm font-medium text-pink-800" htmlFor="groupe_sanguin">
                                     Groupe sanguin
                                 </Label>
                                 <Select value={data.groupe_sanguin} onValueChange={(value) => setData('groupe_sanguin', value)}>
@@ -374,8 +314,8 @@ export default function AddPatienteModal({ isOpen, onClose, sagesFemmes, onCompl
                             </div>
 
                             <div className="space-y-2">
-                                <Label className="text-pink-800" htmlFor="situation_matrimoniale">
-                                    Situation matrimoniale
+                                <Label className="text-sm font-medium text-pink-800" htmlFor="situation_matrimoniale" title="Situation matrimoniale">
+                                    Statut marital
                                 </Label>
                                 <Select value={data.situation_matrimoniale} onValueChange={(value) => setData('situation_matrimoniale', value)}>
                                     <SelectTrigger className="rounded-xl border-pink-300 focus:border-pink-500 focus:ring-pink-500">
@@ -392,7 +332,7 @@ export default function AddPatienteModal({ isOpen, onClose, sagesFemmes, onCompl
                         </div>
 
                         <div className="space-y-2">
-                            <Label className="text-pink-800" htmlFor="profession">
+                            <Label className="text-sm font-medium text-pink-800" htmlFor="profession">
                                 Profession
                             </Label>
                             <Input
@@ -427,13 +367,13 @@ export default function AddPatienteModal({ isOpen, onClose, sagesFemmes, onCompl
                             </div>
 
                             <div className="space-y-2">
-                                <Label className="text-pink-800" htmlFor="numero_urgence">
-                                    Numéro d'urgence
+                                <Label className="text-pink-800" htmlFor="numero_conjoint">
+                                    Numéro du conjoint
                                 </Label>
                                 <Input
-                                    id="numero_urgence"
-                                    value={data.numero_urgence}
-                                    onChange={(e) => setData('numero_urgence', e.target.value)}
+                                    id="numero_conjoint"
+                                    value={data.numero_conjoint}
+                                    onChange={(e) => setData('numero_conjoint', e.target.value)}
                                     placeholder="+33 1 23 45 67 89"
                                     className="rounded-xl border-pink-300 focus:border-pink-500 focus:ring-pink-500"
                                 />
@@ -441,15 +381,15 @@ export default function AddPatienteModal({ isOpen, onClose, sagesFemmes, onCompl
                         </div>
 
                         <div className="space-y-2">
-                            <Label className="text-pink-800" htmlFor="adresse">
-                                Adresse complète
+                            <Label className="text-pink-800" htmlFor="quartier">
+                                Quartier
                             </Label>
                             <Textarea
-                                id="adresse"
-                                value={data.adresse}
-                                onChange={(e) => setData('adresse', e.target.value)}
+                                id="quartier"
+                                value={data.quartier}
+                                onChange={(e) => setData('quartier', e.target.value)}
                                 rows={3}
-                                placeholder="123 Rue de la Paix, 75001 Paris, France"
+                                placeholder="Nom du quartier ou de la zone"
                                 className="rounded-xl border-pink-300 focus:border-pink-500 focus:ring-pink-500"
                             />
                         </div>
@@ -495,7 +435,7 @@ export default function AddPatienteModal({ isOpen, onClose, sagesFemmes, onCompl
                                     id="grossesse_multiple"
                                     checked={data.grossesse_multiple}
                                     onCheckedChange={(checked) => {
-                                        setData('grossesse_multiple', checked as boolean);
+                                        setData('grossesse_multiple', checked === true);
                                         if (!checked) {
                                             setData('nombre_foetus', 1);
                                         }
@@ -517,7 +457,7 @@ export default function AddPatienteModal({ isOpen, onClose, sagesFemmes, onCompl
                                         min="2"
                                         max="5"
                                         value={data.nombre_foetus}
-                                        onChange={(e) => setData('nombre_foetus', e.target.value)}
+                                        onChange={(e) => setData('nombre_foetus', Number(e.target.value) || 2)}
                                         className="w-20 rounded-xl border-pink-300 focus:border-pink-500 focus:ring-pink-500"
                                     />
                                 </div>
@@ -528,7 +468,7 @@ export default function AddPatienteModal({ isOpen, onClose, sagesFemmes, onCompl
                             <Checkbox
                                 id="grossesse_a_risque"
                                 checked={data.grossesse_a_risque}
-                                onCheckedChange={(checked) => setData('grossesse_a_risque', checked as boolean)}
+                                onCheckedChange={(checked) => setData('grossesse_a_risque', checked === true)}
                             />
                             <Label htmlFor="grossesse_a_risque" className="text-pink-800">
                                 Grossesse à risque
@@ -556,92 +496,135 @@ export default function AddPatienteModal({ isOpen, onClose, sagesFemmes, onCompl
             case 'obstetrical':
                 return (
                     <div className="space-y-6">
-                        <h2 className="text-lg font-semibold text-pink-700">Antécédents obstétricaux</h2>
+                        <div>
+                            <h2 className="mb-2 text-lg font-semibold text-pink-700">Antécédents obstétricaux</h2>
+                        </div>
 
-                        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+                        {/* Première ligne : Gestité, Parité, Fausses couches */}
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                             <div className="space-y-2">
-                                <Label className="text-pink-800" htmlFor="nombre_grossesses_anterieures">
-                                    Grossesses antérieures
+                                <Label className="text-sm font-medium text-pink-800" htmlFor="gestite">
+                                    Gestité
                                 </Label>
                                 <Input
-                                    id="nombre_grossesses_anterieures"
+                                    id="gestite"
                                     type="number"
                                     min="0"
-                                    value={data.nombre_grossesses_anterieures}
-                                    onChange={(e) => setData('nombre_grossesses_anterieures', e.target.value)}
+                                    value={data.gestite}
+                                    onChange={(e) => setData('gestite', Number(e.target.value) || 0)}
                                     className="rounded-xl border-pink-300 focus:border-pink-500 focus:ring-pink-500"
+                                    placeholder="0"
                                 />
                             </div>
 
                             <div className="space-y-2">
-                                <Label className="text-pink-800" htmlFor="nombre_accouchements">
-                                    Accouchements
+                                <Label className="text-sm font-medium text-pink-800" htmlFor="parite">
+                                    Parité
                                 </Label>
                                 <Input
-                                    id="nombre_accouchements"
+                                    id="parite"
                                     type="number"
                                     min="0"
-                                    value={data.nombre_accouchements}
-                                    onChange={(e) => setData('nombre_accouchements', e.target.value)}
+                                    value={data.parite}
+                                    onChange={(e) => setData('parite', Number(e.target.value) || 0)}
                                     className="rounded-xl border-pink-300 focus:border-pink-500 focus:ring-pink-500"
+                                    placeholder="0"
                                 />
                             </div>
 
                             <div className="space-y-2">
-                                <Label className="text-pink-800" htmlFor="nombre_avortements">
-                                    Avortements
+                                <Label className="text-sm font-medium text-pink-800" htmlFor="fausses_couches">
+                                    Fausses couches
                                 </Label>
                                 <Input
-                                    id="nombre_avortements"
+                                    id="fausses_couches"
                                     type="number"
                                     min="0"
-                                    value={data.nombre_avortements}
-                                    onChange={(e) => setData('nombre_avortements', e.target.value)}
+                                    value={data.fausses_couches}
+                                    onChange={(e) => setData('fausses_couches', Number(e.target.value) || 0)}
                                     className="rounded-xl border-pink-300 focus:border-pink-500 focus:ring-pink-500"
-                                />
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label className="text-pink-800" htmlFor="nombre_enfants_vivants">
-                                    Enfants vivants
-                                </Label>
-                                <Input
-                                    id="nombre_enfants_vivants"
-                                    type="number"
-                                    min="0"
-                                    value={data.nombre_enfants_vivants}
-                                    onChange={(e) => setData('nombre_enfants_vivants', e.target.value)}
-                                    className="rounded-xl border-pink-300 focus:border-pink-500 focus:ring-pink-500"
+                                    placeholder="0"
                                 />
                             </div>
                         </div>
 
-                        <div className="space-y-2">
-                            <Label className="text-pink-800" htmlFor="antecedents_obstetricaux">
-                                Antécédents obstétricaux
-                            </Label>
-                            <Textarea
-                                id="antecedents_obstetricaux"
-                                value={data.antecedents_obstetricaux}
-                                onChange={(e) => setData('antecedents_obstetricaux', e.target.value)}
-                                rows={3}
-                                placeholder="Complications lors des grossesses/accouchements précédents (césarienne, forceps, prématurité, etc.)"
-                                className="rounded-xl border-pink-300 focus:border-pink-500 focus:ring-pink-500"
-                            />
+                        {/* Deuxième ligne : Enfants vivants, Morts-nés, Décédés */}
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                            <div className="space-y-2">
+                                <Label className="text-sm font-medium text-pink-800" htmlFor="ev">
+                                    EV
+                                </Label>
+                                <Input
+                                    id="ev"
+                                    type="number"
+                                    min="0"
+                                    value={data.ev}
+                                    onChange={(e) => setData('ev', Number(e.target.value) || 0)}
+                                    className="rounded-xl border-pink-300 focus:border-pink-500 focus:ring-pink-500"
+                                    placeholder="0"
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label className="text-sm font-medium text-pink-800" htmlFor="morts_nes">
+                                    Morts-nés
+                                </Label>
+                                <Input
+                                    id="morts_nes"
+                                    type="number"
+                                    min="0"
+                                    value={data.morts_nes}
+                                    onChange={(e) => setData('morts_nes', Number(e.target.value) || 0)}
+                                    className="rounded-xl border-pink-300 focus:border-pink-500 focus:ring-pink-500"
+                                    placeholder="0"
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label className="text-sm font-medium text-pink-800" htmlFor="decedes">
+                                    Décédés
+                                </Label>
+                                <Input
+                                    id="decedes"
+                                    type="number"
+                                    min="0"
+                                    value={data.decedes}
+                                    onChange={(e) => setData('decedes', Number(e.target.value) || 0)}
+                                    className="rounded-xl border-pink-300 focus:border-pink-500 focus:ring-pink-500"
+                                    placeholder="0"
+                                />
+                            </div>
                         </div>
 
-                        <div className="space-y-2">
-                            <Label className="text-pink-800" htmlFor="antecedents_gynecologiques">
-                                Antécédents gynécologiques
-                            </Label>
-                            <Textarea
-                                id="antecedents_gynecologiques"
-                                value={data.antecedents_gynecologiques}
-                                onChange={(e) => setData('antecedents_gynecologiques', e.target.value)}
-                                rows={3}
-                                placeholder="Historique gynécologique, interventions, pathologies (fibromes, endométriose, etc.)"
-                                className="rounded-xl border-pink-300 focus:border-pink-500 focus:ring-pink-500"
-                            />
+                        {/* Section détails */}
+                        <div className="space-y-4 pt-2">
+                            <div className="space-y-2">
+                                <Label className="text-sm font-medium text-pink-800" htmlFor="antecedents_obstetricaux">
+                                    Antécédents obstétricaux
+                                </Label>
+                                <Textarea
+                                    id="antecedents_obstetricaux"
+                                    value={data.antecedents_obstetricaux}
+                                    onChange={(e) => setData('antecedents_obstetricaux', e.target.value)}
+                                    rows={3}
+                                    placeholder="Complications lors des grossesses/accouchements précédents (césarienne, forceps, prématurité, etc.)"
+                                    className="rounded-xl border-pink-300 focus:border-pink-500 focus:ring-pink-500"
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label className="text-sm font-medium text-pink-800" htmlFor="antecedents_gynecologiques">
+                                    Antécédents gynécologiques
+                                </Label>
+                                <Textarea
+                                    id="antecedents_gynecologiques"
+                                    value={data.antecedents_gynecologiques}
+                                    onChange={(e) => setData('antecedents_gynecologiques', e.target.value)}
+                                    rows={3}
+                                    placeholder="Historique gynécologique, interventions, pathologies (fibromes, endométriose, etc.)"
+                                    className="rounded-xl border-pink-300 focus:border-pink-500 focus:ring-pink-500"
+                                />
+                            </div>
                         </div>
                     </div>
                 );
@@ -748,14 +731,14 @@ export default function AddPatienteModal({ isOpen, onClose, sagesFemmes, onCompl
 
                         <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-6">
                             <div className="flex items-center space-x-2">
-                                <Checkbox id="tabac" checked={data.tabac} onCheckedChange={(checked) => setData('tabac', checked as boolean)} />
+                                <Checkbox id="tabac" checked={data.tabac} onCheckedChange={(checked) => setData('tabac', checked === true)} />
                                 <Label htmlFor="tabac" className="text-pink-800">
                                     Consommation de tabac
                                 </Label>
                             </div>
 
                             <div className="flex items-center space-x-2">
-                                <Checkbox id="alcool" checked={data.alcool} onCheckedChange={(checked) => setData('alcool', checked as boolean)} />
+                                <Checkbox id="alcool" checked={data.alcool} onCheckedChange={(checked) => setData('alcool', checked === true)} />
                                 <Label htmlFor="alcool" className="text-pink-800">
                                     Consommation d'alcool
                                 </Label>
@@ -868,36 +851,46 @@ export default function AddPatienteModal({ isOpen, onClose, sagesFemmes, onCompl
 
     return (
         <Dialog open={isOpen} onOpenChange={handleClose}>
-            <DialogContent className="max-h-[95vh] max-w-5xl overflow-y-auto">
-                <DialogHeader>
-                    <DialogTitle className="text-xl font-bold text-pink-600">Ajouter une nouvelle patiente</DialogTitle>
-                </DialogHeader>
+            <DialogContent className="max-h-[90vh] max-w-4xl overflow-hidden p-0">
+                <div className="flex max-h-[90vh] flex-col">
+                    {/* En-tête fixe */}
+                    <DialogHeader className="border-b border-pink-100 bg-gradient-to-r from-pink-50 to-white px-6 py-4">
+                        <DialogTitle className="text-2xl font-bold text-pink-600">Ajouter une nouvelle patiente</DialogTitle>
 
-                {/* Messages d'erreur globaux */}
-                {Object.keys(errors).length > 0 && (
-                    <Alert variant="destructive" className="mb-4">
-                        <AlertCircle className="h-4 w-4" />
-                        <AlertDescription>Veuillez corriger les erreurs dans le formulaire.</AlertDescription>
-                    </Alert>
-                )}
+                        {/* Barre de progression */}
+                        <div className="mt-4 space-y-2">
+                            <div className="relative h-2 w-full overflow-hidden rounded-full bg-pink-100 shadow-inner">
+                                <div
+                                    className="absolute h-full bg-pink-500 transition-all duration-300 ease-in-out"
+                                    style={{ width: `${progress}%` }}
+                                />
+                            </div>
+                            <div className="flex justify-between text-xs text-pink-700">
+                                <span className="font-medium">
+                                    Étape {step} sur {totalSteps}
+                                </span>
+                                <span className="font-medium">{Math.round(progress)}% complété</span>
+                            </div>
+                        </div>
+                    </DialogHeader>
 
-                <div className="space-y-6">
-                    {/* Barre de progression simple */}
-                    <div className="relative h-2 w-full overflow-hidden rounded-full bg-pink-100 shadow-inner">
-                        <div className="absolute h-full bg-pink-500 transition-all duration-300 ease-in-out" style={{ width: `${progress}%` }} />
-                    </div>
-                    <div className="flex justify-between text-sm text-pink-700">
-                        <span>
-                            Étape {step} sur {totalSteps}
-                        </span>
-                        <span>{Math.round(progress)}% complété</span>
-                    </div>
+                    {/* Messages d'erreur globaux */}
+                    {Object.keys(errors).length > 0 && (
+                        <div className="px-6 pt-4">
+                            <Alert variant="destructive">
+                                <AlertCircle className="h-4 w-4" />
+                                <AlertDescription>Veuillez corriger les erreurs dans le formulaire.</AlertDescription>
+                            </Alert>
+                        </div>
+                    )}
 
-                    <form onSubmit={handleSubmit}>
-                        <Card className="rounded-2xl border-0 bg-white p-6 shadow-xl">
-                            {renderStep()}
+                    {/* Contenu scrollable */}
+                    <div className="flex-1 overflow-y-auto px-6 py-6">
+                        <form onSubmit={handleSubmit}>
+                            <div className="min-h-[400px]">{renderStep()}</div>
 
-                            <div className="mt-6 flex justify-between">
+                            {/* Boutons de navigation */}
+                            <div className="mt-8 flex items-center justify-between border-t border-pink-100 pt-6">
                                 {step > 1 ? (
                                     <Button
                                         type="button"
@@ -932,8 +925,8 @@ export default function AddPatienteModal({ isOpen, onClose, sagesFemmes, onCompl
                                     )}
                                 </Button>
                             </div>
-                        </Card>
-                    </form>
+                        </form>
+                    </div>
                 </div>
             </DialogContent>
         </Dialog>

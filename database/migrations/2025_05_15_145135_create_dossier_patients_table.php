@@ -25,10 +25,12 @@ return new class extends Migration
             $table->text('facteurs_risque')->nullable();
 
             // Antécédents médicaux
-            $table->integer('nombre_grossesses_anterieures')->default(0);
-            $table->integer('nombre_accouchements')->default(0);
-            $table->integer('nombre_avortements')->default(0);
-            $table->integer('nombre_enfants_vivants')->default(0);
+            $table->integer('gestite')->default(0);
+            $table->integer('parite')->default(0);
+            $table->integer('fausses_couches')->default(0);
+            $table->integer('ev')->default(0);
+            $table->integer('morts_nes')->default(0);
+            $table->integer('decedes')->default(0);
             $table->text('antecedents_medicaux')->nullable();
             $table->text('antecedents_chirurgicaux')->nullable();
             $table->text('antecedents_familiaux')->nullable();

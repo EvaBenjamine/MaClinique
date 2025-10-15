@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('nom');
             $table->string('prenom');
-            $table->string('role');
+            $table->enum('role', ['admin', 'sage_femme', 'secretaire', 'patiente'])->default('patiente');
             $table->string('email');
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
