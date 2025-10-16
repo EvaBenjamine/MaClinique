@@ -1,3 +1,5 @@
+import { AccouchementForm as AccouchementFormMultiStep } from '@/components/dossier/forms/accouchement-form';
+import { ConsultationForm as ConsultationFormMultiStep } from '@/components/dossier/forms/consultation-form';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
+import { useDossierPatient } from '@/contexts/dossier-patient-context';
 import { router, useForm, usePage } from '@inertiajs/react';
 import {
     AlertTriangle,
@@ -29,7 +32,6 @@ import {
     Upload,
     User,
 } from 'lucide-react';
-import { useState } from 'react';
 
 interface DossierPatientProps {
     dossier: {
@@ -90,12 +92,10 @@ interface DossierPatientProps {
     }>;
 }
 
-export default function DossierPatientTabs({ dossier, sages_femmes = [] }: DossierPatientProps) {
-    const [activeTab, setActiveTab] = useState('general');
-    const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [dialogType, setDialogType] = useState<'consultation' | 'examen' | 'prescription' | 'rendez-vous' | 'document' | 'note' | 'accouchement'>(
-        'consultation',
-    );
+function DossierPatientTabsContent({ dossier, sages_femmes = [] }: DossierPatientProps) {
+    // Utiliser le contexte au lieu de l'état local
+    const { activeTab, setActiveTab, isDialogOpen, setIsDialogOpen, dialogType, setDialogType } = useDossierPatient();
+
     const { auth } = usePage().props;
 
     // Formulaires Inertia pour chaque type
@@ -202,7 +202,10 @@ export default function DossierPatientTabs({ dossier, sages_femmes = [] }: Dossi
     );
 
     const openDialog = (type: typeof dialogType) => {
+        console.log('🚀 openDialog appelé avec type:', type);
+        console.log('🚀 Avant setDialogType - dialogType actuel:', dialogType);
         setDialogType(type);
+        console.log('🚀 Après setDialogType - nouveau type devrait être:', type);
         setIsDialogOpen(true);
     };
 
@@ -268,166 +271,6 @@ export default function DossierPatientTabs({ dossier, sages_femmes = [] }: Dossi
             router.delete(routes[type as keyof typeof routes]);
         }
     };
-
-    // Formulaire Consultation
-    const ConsultationForm = () => (
-        <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-                <div>
-                    <Label htmlFor="date">Date de consultation</Label>
-                    <Input
-                        type="date"
-                        id="date"
-                        value={consultationForm.data.date}
-                        onChange={(e) => consultationForm.setData('date', e.target.value)}
-                    />
-                    {consultationForm.errors.date && <p className="mt-1 text-sm text-red-500">{consultationForm.errors.date}</p>}
-                </div>
-                <div>
-                    <Label htmlFor="type_consultation">Type de consultation</Label>
-                    <Select
-                        value={consultationForm.data.type_consultation}
-                        onValueChange={(value) => consultationForm.setData('type_consultation', value)}
-                    >
-                        <SelectTrigger>
-                            <SelectValue placeholder="Sélectionner le type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="suivi_grossesse">Suivi de grossesse</SelectItem>
-                            <SelectItem value="consultation_urgence">Consultation d'urgence</SelectItem>
-                            <SelectItem value="consultation_controle">Consultation de contrôle</SelectItem>
-                            <SelectItem value="consultation_prenatale">Consultation prénatale</SelectItem>
-                            <SelectItem value="consultation_postnatale">Consultation postnatale</SelectItem>
-                        </SelectContent>
-                    </Select>
-                    {consultationForm.errors.type_consultation && (
-                        <p className="mt-1 text-sm text-red-500">{consultationForm.errors.type_consultation}</p>
-                    )}
-                </div>
-            </div>
-
-            {/* Mesures physiques */}
-            <div className="border-t pt-4">
-                <h4 className="text-muted-foreground mb-3 text-sm font-medium">Mesures physiques</h4>
-                <div className="grid grid-cols-3 gap-4">
-                    <div>
-                        <Label htmlFor="poids">Poids (kg)</Label>
-                        <Input
-                            type="number"
-                            step="0.1"
-                            id="poids"
-                            placeholder="65.5"
-                            value={consultationForm.data.poids}
-                            onChange={(e) => consultationForm.setData('poids', e.target.value)}
-                        />
-                    </div>
-                    <div>
-                        <Label htmlFor="tension_arterielle_systolique">Tension systolique</Label>
-                        <Input
-                            type="number"
-                            step="0.1"
-                            id="tension_arterielle_systolique"
-                            placeholder="120"
-                            value={consultationForm.data.tension_arterielle_systolique}
-                            onChange={(e) => consultationForm.setData('tension_arterielle_systolique', e.target.value)}
-                        />
-                    </div>
-                    <div>
-                        <Label htmlFor="tension_arterielle_diastolique">Tension diastolique</Label>
-                        <Input
-                            type="number"
-                            step="0.1"
-                            id="tension_arterielle_diastolique"
-                            placeholder="80"
-                            value={consultationForm.data.tension_arterielle_diastolique}
-                            onChange={(e) => consultationForm.setData('tension_arterielle_diastolique', e.target.value)}
-                        />
-                    </div>
-                </div>
-            </div>
-
-            {/* Mesures obstétricales */}
-            <div className="border-t pt-4">
-                <h4 className="text-muted-foreground mb-3 text-sm font-medium">Mesures obstétricales</h4>
-                <div className="grid grid-cols-3 gap-4">
-                    <div>
-                        <Label htmlFor="hauteur_uterine">Hauteur utérine (cm)</Label>
-                        <Input
-                            type="number"
-                            step="0.1"
-                            id="hauteur_uterine"
-                            placeholder="32.5"
-                            value={consultationForm.data.hauteur_uterine}
-                            onChange={(e) => consultationForm.setData('hauteur_uterine', e.target.value)}
-                        />
-                    </div>
-                    <div>
-                        <Label htmlFor="position_foetus">Position du fœtus</Label>
-                        <Input
-                            id="position_foetus"
-                            placeholder="Vertex, siège, transverse..."
-                            value={consultationForm.data.position_foetus}
-                            onChange={(e) => consultationForm.setData('position_foetus', e.target.value)}
-                        />
-                    </div>
-                    <div>
-                        <Label htmlFor="rythme_cardiaque_foetal">Rythme cardiaque fœtal (bpm)</Label>
-                        <Input
-                            type="number"
-                            id="rythme_cardiaque_foetal"
-                            placeholder="140"
-                            value={consultationForm.data.rythme_cardiaque_foetal}
-                            onChange={(e) => consultationForm.setData('rythme_cardiaque_foetal', e.target.value)}
-                        />
-                    </div>
-                </div>
-            </div>
-
-            {/* Observations et prescriptions */}
-            <div className="space-y-4 border-t pt-4">
-                <div>
-                    <Label htmlFor="observations">Observations</Label>
-                    <Textarea
-                        id="observations"
-                        placeholder="Observations cliniques de la consultation..."
-                        rows={3}
-                        value={consultationForm.data.observations}
-                        onChange={(e) => consultationForm.setData('observations', e.target.value)}
-                    />
-                </div>
-                <div>
-                    <Label htmlFor="prescriptions">Prescriptions</Label>
-                    <Textarea
-                        id="prescriptions"
-                        placeholder="Médicaments prescrits..."
-                        rows={2}
-                        value={consultationForm.data.prescriptions}
-                        onChange={(e) => consultationForm.setData('prescriptions', e.target.value)}
-                    />
-                </div>
-                <div>
-                    <Label htmlFor="examens_prescrits">Examens prescrits</Label>
-                    <Textarea
-                        id="examens_prescrits"
-                        placeholder="Examens à réaliser..."
-                        rows={2}
-                        value={consultationForm.data.examens_prescrits}
-                        onChange={(e) => consultationForm.setData('examens_prescrits', e.target.value)}
-                    />
-                </div>
-                <div>
-                    <Label htmlFor="recommandations">Recommandations</Label>
-                    <Textarea
-                        id="recommandations"
-                        placeholder="Recommandations pour la patiente..."
-                        rows={2}
-                        value={consultationForm.data.recommandations}
-                        onChange={(e) => consultationForm.setData('recommandations', e.target.value)}
-                    />
-                </div>
-            </div>
-        </form>
-    );
 
     // Formulaire Examen
     const ExamenForm = () => (
@@ -790,197 +633,6 @@ export default function DossierPatientTabs({ dossier, sages_femmes = [] }: Dossi
         </form>
     );
 
-    // Formulaire Accouchement
-    const AccouchementForm = () => (
-        <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-                <div>
-                    <Label htmlFor="date_accouchement">Date d'accouchement</Label>
-                    <Input
-                        type="datetime-local"
-                        id="date_accouchement"
-                        value={accouchementForm.data.date_accouchement}
-                        onChange={(e) => accouchementForm.setData('date_accouchement', e.target.value)}
-                    />
-                    {accouchementForm.errors.date_accouchement && (
-                        <p className="mt-1 text-sm text-red-500">{accouchementForm.errors.date_accouchement}</p>
-                    )}
-                </div>
-                <div>
-                    <Label htmlFor="type_accouchement">Type d'accouchement</Label>
-                    <Select
-                        value={accouchementForm.data.type_accouchement}
-                        onValueChange={(value) => accouchementForm.setData('type_accouchement', value)}
-                    >
-                        <SelectTrigger>
-                            <SelectValue placeholder="Sélectionner le type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="voie_basse">Voie basse</SelectItem>
-                            <SelectItem value="cesarienne">Césarienne</SelectItem>
-                            <SelectItem value="forceps">Forceps</SelectItem>
-                            <SelectItem value="ventouse">Ventouse</SelectItem>
-                            <SelectItem value="siege">Siège</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-            </div>
-
-            {/* Durées du travail */}
-            <div className="border-t pt-4">
-                <h4 className="text-muted-foreground mb-3 text-sm font-medium">Durées</h4>
-                <div className="grid grid-cols-3 gap-4">
-                    <div>
-                        <Label htmlFor="duree_travail">Durée du travail (heures)</Label>
-                        <Input
-                            type="number"
-                            step="0.5"
-                            id="duree_travail"
-                            placeholder="8.5"
-                            value={accouchementForm.data.duree_travail}
-                            onChange={(e) => accouchementForm.setData('duree_travail', e.target.value)}
-                        />
-                    </div>
-                    <div>
-                        <Label htmlFor="duree_expulsion">Durée d'expulsion (minutes)</Label>
-                        <Input
-                            type="number"
-                            id="duree_expulsion"
-                            placeholder="20"
-                            value={accouchementForm.data.duree_expulsion}
-                            onChange={(e) => accouchementForm.setData('duree_expulsion', e.target.value)}
-                        />
-                    </div>
-                    <div>
-                        <Label htmlFor="presentation">Présentation</Label>
-                        <Input
-                            id="presentation"
-                            placeholder="Vertex, siège..."
-                            value={accouchementForm.data.presentation}
-                            onChange={(e) => accouchementForm.setData('presentation', e.target.value)}
-                        />
-                    </div>
-                </div>
-            </div>
-
-            {/* Informations sur le bébé */}
-            <div className="border-t pt-4">
-                <h4 className="text-muted-foreground mb-3 text-sm font-medium">Informations sur le bébé</h4>
-                <div className="grid grid-cols-4 gap-4">
-                    <div>
-                        <Label htmlFor="poids_bebe">Poids (g)</Label>
-                        <Input
-                            type="number"
-                            id="poids_bebe"
-                            placeholder="3200"
-                            value={accouchementForm.data.poids_bebe}
-                            onChange={(e) => accouchementForm.setData('poids_bebe', e.target.value)}
-                        />
-                    </div>
-                    <div>
-                        <Label htmlFor="taille_bebe">Taille (cm)</Label>
-                        <Input
-                            type="number"
-                            step="0.5"
-                            id="taille_bebe"
-                            placeholder="50"
-                            value={accouchementForm.data.taille_bebe}
-                            onChange={(e) => accouchementForm.setData('taille_bebe', e.target.value)}
-                        />
-                    </div>
-                    <div>
-                        <Label htmlFor="perimetre_cranien">Périmètre crânien (cm)</Label>
-                        <Input
-                            type="number"
-                            step="0.5"
-                            id="perimetre_cranien"
-                            placeholder="35"
-                            value={accouchementForm.data.perimetre_cranien}
-                            onChange={(e) => accouchementForm.setData('perimetre_cranien', e.target.value)}
-                        />
-                    </div>
-                    <div>
-                        <Label htmlFor="sexe">Sexe</Label>
-                        <Select value={accouchementForm.data.sexe} onValueChange={(value) => accouchementForm.setData('sexe', value)}>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Sélectionner" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="masculin">Masculin</SelectItem>
-                                <SelectItem value="feminin">Féminin</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                </div>
-            </div>
-
-            {/* Scores APGAR */}
-            <div className="border-t pt-4">
-                <h4 className="text-muted-foreground mb-3 text-sm font-medium">Scores APGAR</h4>
-                <div className="grid grid-cols-2 gap-4">
-                    <div>
-                        <Label htmlFor="apgar_1min">APGAR à 1 minute</Label>
-                        <Input
-                            type="number"
-                            min="0"
-                            max="10"
-                            id="apgar_1min"
-                            placeholder="9"
-                            value={accouchementForm.data.apgar_1min}
-                            onChange={(e) => accouchementForm.setData('apgar_1min', e.target.value)}
-                        />
-                    </div>
-                    <div>
-                        <Label htmlFor="apgar_5min">APGAR à 5 minutes</Label>
-                        <Input
-                            type="number"
-                            min="0"
-                            max="10"
-                            id="apgar_5min"
-                            placeholder="10"
-                            value={accouchementForm.data.apgar_5min}
-                            onChange={(e) => accouchementForm.setData('apgar_5min', e.target.value)}
-                        />
-                    </div>
-                </div>
-            </div>
-
-            {/* Observations */}
-            <div className="space-y-4 border-t pt-4">
-                <div>
-                    <Label htmlFor="complications">Complications</Label>
-                    <Textarea
-                        id="complications"
-                        placeholder="Complications durant l'accouchement..."
-                        rows={2}
-                        value={accouchementForm.data.complications}
-                        onChange={(e) => accouchementForm.setData('complications', e.target.value)}
-                    />
-                </div>
-                <div>
-                    <Label htmlFor="observations_accouchement">Observations</Label>
-                    <Textarea
-                        id="observations_accouchement"
-                        placeholder="Observations générales sur l'accouchement..."
-                        rows={3}
-                        value={accouchementForm.data.observations_accouchement}
-                        onChange={(e) => accouchementForm.setData('observations_accouchement', e.target.value)}
-                    />
-                </div>
-                <div>
-                    <Label htmlFor="equipe_medicale">Équipe médicale</Label>
-                    <Textarea
-                        id="equipe_medicale"
-                        placeholder="Membres de l'équipe présente..."
-                        rows={2}
-                        value={accouchementForm.data.equipe_medicale}
-                        onChange={(e) => accouchementForm.setData('equipe_medicale', e.target.value)}
-                    />
-                </div>
-            </div>
-        </form>
-    );
-
     const getDialogTitle = () => {
         switch (dialogType) {
             case 'consultation':
@@ -1003,9 +655,30 @@ export default function DossierPatientTabs({ dossier, sages_femmes = [] }: Dossi
     };
 
     const getFormComponent = () => {
+        const refreshData = () => {
+            router.reload();
+        };
+
+        console.log('🔍 Dialog Type:', dialogType);
+        console.log('🔍 Is Dialog Open:', isDialogOpen);
+
         switch (dialogType) {
             case 'consultation':
-                return <ConsultationForm />;
+                console.log('✅ Rendering ConsultationFormMultiStep');
+                return (
+                    <div>
+                        <div className="rounded-lg bg-blue-100 p-2 text-xs text-blue-900">DEBUG: ConsultationFormMultiStep chargé ✅</div>
+                        <ConsultationFormMultiStep isOpen={isDialogOpen} onClose={() => setIsDialogOpen(false)} onComplete={refreshData} />
+                    </div>
+                );
+            case 'accouchement':
+                console.log('✅ Rendering AccouchementFormMultiStep');
+                return (
+                    <div>
+                        <div className="rounded-lg bg-green-100 p-2 text-xs text-green-900">DEBUG: AccouchementFormMultiStep chargé ✅</div>
+                        <AccouchementFormMultiStep isOpen={isDialogOpen} onClose={() => setIsDialogOpen(false)} onComplete={refreshData} />
+                    </div>
+                );
             case 'examen':
                 return <ExamenForm />;
             case 'prescription':
@@ -1016,10 +689,8 @@ export default function DossierPatientTabs({ dossier, sages_femmes = [] }: Dossi
                 return <DocumentForm />;
             case 'note':
                 return <NoteSuiviForm />;
-            case 'accouchement':
-                return <AccouchementForm />;
             default:
-                return <ConsultationForm />;
+                return null;
         }
     };
 
@@ -1724,23 +1395,36 @@ export default function DossierPatientTabs({ dossier, sages_femmes = [] }: Dossi
                 </TabsContent>
             </Tabs>
 
-            {/* Dialog pour les formulaires */}
+            {/* Dialog unique pour tous les formulaires */}
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogContent className="max-h-[90vh] max-w-4xl overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle>{getDialogTitle()}</DialogTitle>
                     </DialogHeader>
                     <div className="py-4">{getFormComponent()}</div>
-                    <div className="flex justify-end space-x-2 border-t pt-4">
-                        <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-                            Annuler
-                        </Button>
-                        <Button onClick={handleSubmit} disabled={getCurrentForm().processing}>
-                            {getCurrentForm().processing ? 'Enregistrement...' : 'Enregistrer'}
-                        </Button>
-                    </div>
+                    {dialogType !== 'consultation' && dialogType !== 'accouchement' && (
+                        <div className="flex justify-end space-x-2 border-t pt-4">
+                            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+                                Annuler
+                            </Button>
+                            <Button onClick={handleSubmit} disabled={getCurrentForm().processing}>
+                                {getCurrentForm().processing ? 'Enregistrement...' : 'Enregistrer'}
+                            </Button>
+                        </div>
+                    )}
                 </DialogContent>
             </Dialog>
         </div>
+    );
+}
+
+// Wrapper qui fournit le contexte
+import { DossierPatientProvider } from '@/contexts/dossier-patient-context';
+
+export default function DossierPatientTabs({ dossier, sages_femmes = [] }: DossierPatientProps) {
+    return (
+        <DossierPatientProvider dossier={dossier} sagesFemmes={sages_femmes}>
+            <DossierPatientTabsContent dossier={dossier} sages_femmes={sages_femmes} />
+        </DossierPatientProvider>
     );
 }

@@ -1,9 +1,8 @@
 'use client';
 
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { router } from '@inertiajs/react';
-import { Link, usePage } from '@inertiajs/react';
-import { Calendar, FileText, LayoutDashboard, LogOut, Stethoscope, User, Users } from 'lucide-react';
+import { Link, router, usePage } from '@inertiajs/react';
+import { Baby, Calendar, FileText, LayoutDashboard, LogOut, Stethoscope, User, Users } from 'lucide-react';
 
 interface SidebarProps {
     children: React.ReactNode;
@@ -67,6 +66,11 @@ export default function Sidebar({ children }: SidebarProps) {
                         <Link href="/consultations" className={linkClass('/consultations')}>
                             <Stethoscope size={20} />
                             Consultations
+                        </Link>
+
+                        <Link href="/accouchements" className={linkClass('/accouchements')}>
+                            <Baby size={20} />
+                            Accouchements
                         </Link>
 
                         <Link href="/dossiers" className={linkClass('/dossiers')}>

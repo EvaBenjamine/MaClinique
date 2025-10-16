@@ -5,6 +5,7 @@ use Inertia\Inertia;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\PatienteController;
 use App\Http\Controllers\ConsultationController;
+use App\Http\Controllers\AccouchementController;
 use App\Http\Controllers\DashboardController;
 
 Route::get('/', function () {
@@ -27,6 +28,9 @@ Route::get('/consultations/create', function(){
     return Inertia::render('consultations/create');
 })->name('consultations.create');
 Route::post('/consultations', [PatienteController::Class, 'storeConsultation'])->name('consultations.store');
+
+Route::get('/accouchements', [AccouchementController::Class, 'index'])->name('accouchements.index');
+Route::delete('/accouchements/{accouchement}', [AccouchementController::Class, 'destroy'])->name('accouchements.destroy');
 Route::post('/examens', [PatienteController::Class, 'storeExamen'])->name('examens.store');
 Route::post('/prescriptions', [PatienteController::Class, 'storePrescription'])->name('prescriptions.store');
 Route::post('/rdv', [PatienteController::Class, 'storeRdv'])->name('rendez-vous.store');

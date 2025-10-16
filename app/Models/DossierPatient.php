@@ -120,6 +120,14 @@ class DossierPatient extends Model
     }
 
     /**
+     * Obtenir les accouchements associés à ce dossier.
+     */
+    public function accouchements(): HasMany
+    {
+        return $this->hasMany(Accouchement::class);
+    }
+
+    /**
      * Calculer l'âge de grossesse en semaines.
      */
     public function ageGrossesseSemaines()

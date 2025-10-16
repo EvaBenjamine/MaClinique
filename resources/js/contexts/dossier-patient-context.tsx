@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 
 interface DossierPatientContextType {
     activeTab: string;
@@ -84,14 +84,27 @@ export function DossierPatientProvider({
     children,
     dossier,
     sagesFemmes = [],
+    initialDialogType = 'consultation',
+    initialIsDialogOpen = false,
 }: {
     children: ReactNode;
     dossier: DossierData;
     sagesFemmes?: SageFemme[];
+    initialDialogType?: DialogType;
+    initialIsDialogOpen?: boolean;
 }) {
     const [activeTab, setActiveTab] = useState('general');
-    const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [dialogType, setDialogType] = useState<DialogType>('consultation');
+    const [isDialogOpen, setIsDialogOpen] = useState(initialIsDialogOpen);
+    const [dialogType, setDialogType] = useState<DialogType>(initialDialogType);
+
+    // Synchroniser avec les props quand elles changent
+    useEffect(() => {
+        setDialogType(initialDialogType);
+    }, [initialDialogType]);
+
+    useEffect(() => {
+        setIsDialogOpen(initialIsDialogOpen);
+    }, [initialIsDialogOpen]);
 
     const refreshData = () => {
         // Logique pour rafraîchir les données

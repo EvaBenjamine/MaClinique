@@ -59,6 +59,7 @@ type PageProps = {
     examens: Array<unknown>;
     prescriptions: Array<unknown>;
     documents: Array<unknown>;
+    accouchements: Array<unknown>;
     trimestre: string;
     age_grossesse_semaines: number;
     sages_femmes: Array<{
@@ -69,8 +70,19 @@ type PageProps = {
 };
 
 export default function DossierPage() {
-    const { patiente, consultations, examens, prescriptions, documents, dossier, sage_femme, trimestre, age_grossesse_semaines, sages_femmes } =
-        usePage<PageProps>().props;
+    const {
+        patiente,
+        consultations,
+        examens,
+        prescriptions,
+        documents,
+        accouchements,
+        dossier,
+        sage_femme,
+        trimestre,
+        age_grossesse_semaines,
+        sages_femmes,
+    } = usePage<PageProps>().props;
 
     // Enrichir le dossier avec les données calculées et les relations
     const enrichedDossier = {
@@ -83,6 +95,7 @@ export default function DossierPage() {
         examens,
         prescriptions,
         documents,
+        accouchements,
     };
 
     return (

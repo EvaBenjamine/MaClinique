@@ -9,6 +9,7 @@ use App\Models\Secretaire;
 use App\Models\Patiente;
 use App\Models\DossierPatient; // Ajout de l'import manquant
 use App\Models\Consultation;
+use App\Models\Accouchement;
 use App\Models\Examen;
 use App\Models\Prescription;
 use App\Models\Document;
@@ -293,6 +294,7 @@ class PatienteController extends Controller
         $examens = $dossier->examens;
         $prescriptions = $dossier->prescriptions;
         $documents = $dossier->documents;
+        $accouchements = $dossier->accouchements;
         $sages_femmes = SageFemme::with('user')->get()->map(function ($sf) {
             return [
                 'id' => $sf->id,
@@ -322,6 +324,7 @@ class PatienteController extends Controller
             'examens' => $examens,
             'prescriptions' => $prescriptions,
             'documents' => $documents,
+            'accouchements' => $accouchements,
             'trimestre' => $dossier->trimestre(),
             'age_grossesse_semaines' => $dossier->ageGrossesseSemaines(),
             'sages_femmes' => $sages_femmes,
@@ -407,17 +410,50 @@ class PatienteController extends Controller
         $validated = $request->validate([
             'dossier_patient_id' => 'required|exists:dossier_patients,id',
             'date' => 'required|date',
-            'type_consultation' => 'required|string|max:255',
+            'type_consultation' => 'required|string',
+
+            // Champs communs (14 champs)
             'poids' => 'nullable|numeric',
             'tension_arterielle_systolique' => 'nullable|numeric',
             'tension_arterielle_diastolique' => 'nullable|numeric',
-            'hauteur_uterine' => 'nullable|numeric',
-            'position_foetus' => 'nullable|string|max:255',
-            'rythme_cardiaque_foetal' => 'nullable|integer',
             'observations' => 'nullable|string',
             'prescriptions' => 'nullable|string',
             'examens_prescrits' => 'nullable|string',
             'recommandations' => 'nullable|string',
+            'varices' => 'nullable|string',
+            'dents_gencives' => 'nullable|string',
+            'hauteur_uterine' => 'nullable|numeric',
+            'position_foetus' => 'nullable|string|max:255',
+            'rythme_cardiaque_foetal' => 'nullable|integer',
+            'prochain_rdv' => 'nullable|date',
+
+            // Champs spécifiques CPN (10 champs)
+            'age_gestationnel_semaines' => 'nullable|integer',
+            'plaintes' => 'nullable|string',
+            'maf' => 'nullable|string',
+            'vulve' => 'nullable|string',
+            'examen_speculum' => 'nullable|string',
+            'toucher_vaginal' => 'nullable|string',
+            'etat_bassin' => 'nullable|string',
+
+            // Champs spécifiques CPP (17 champs)
+            'jour_postnatal' => 'nullable|integer',
+            'montee_lait' => 'nullable|boolean',
+            'presence_gercures' => 'nullable|boolean',
+            'engorgement_mamaire' => 'nullable|boolean',
+            'involution_uterine' => 'nullable|boolean',
+            'perinee' => 'nullable|string',
+            'lochies' => 'nullable|in:normales,abondantes,malodorantes,absentes',
+            'mollets' => 'nullable|string',
+            'toucher_vaginal_cpp' => 'nullable|string',
+            'contraception' => 'nullable|string',
+            'poids_nouveau_ne' => 'nullable|numeric',
+            'taille_nouveau_ne' => 'nullable|numeric',
+            'perimetre_cranien_nouveau_ne' => 'nullable|numeric',
+            'perimetre_thoracique_nouveau_ne' => 'nullable|numeric',
+            'temperature_nouveau_ne' => 'nullable|numeric',
+            'cordon' => 'nullable|string',
+            'reflexes' => 'nullable|boolean',
         ]);
 
         try {
@@ -430,23 +466,22 @@ class PatienteController extends Controller
                 throw new \Exception('Utilisateur non autorisé à créer des consultations.');
             }
 
-            // Créer la consultation
-            $consultation = Consultation::create([
+            // Créer la consultation avec tous les champs
+            $consultationData = [
                 'dossier_patient_id' => $validated['dossier_patient_id'],
                 'sage_femme_id' => $sageFemme->id,
                 'date' => $validated['date'],
                 'type_consultation' => $validated['type_consultation'],
-                'poids' => $validated['poids'] ?? null,
-                'tension_arterielle_systolique' => $validated['tension_arterielle_systolique'] ?? null,
-                'tension_arterielle_diastolique' => $validated['tension_arterielle_diastolique'] ?? null,
-                'hauteur_uterine' => $validated['hauteur_uterine'] ?? null,
-                'position_foetus' => $validated['position_foetus'] ?? null,
-                'rythme_cardiaque_foetal' => $validated['rythme_cardiaque_foetal'] ?? null,
-                'observations' => $validated['observations'] ?? null,
-                'prescriptions' => $validated['prescriptions'] ?? null,
-                'examens_prescrits' => $validated['examens_prescrits'] ?? null,
-                'recommandations' => $validated['recommandations'] ?? null,
-            ]);
+            ];
+
+            // Ajouter tous les champs disponibles dans validated
+            foreach ($validated as $key => $value) {
+                if ($key !== 'dossier_patient_id') {
+                    $consultationData[$key] = $value;
+                }
+            }
+
+            $consultation = Consultation::create($consultationData);
 
             // Mettre à jour la date de dernière consultation dans le dossier patient
             $dossier = DossierPatient::findOrFail($validated['dossier_patient_id']);
@@ -470,6 +505,90 @@ class PatienteController extends Controller
             return back()->withErrors(['error' => 'Erreur lors de l\'enregistrement de la consultation: ' . $e->getMessage()]);
         }
 
+    }
+
+
+    public function storeAccouchement(Request $request)
+    {
+        $validated = $request->validate([
+            'dossier_patient_id' => 'required|exists:dossier_patients,id',
+            'date_accouchement' => 'required|date',
+            'heure_accouchement' => 'required',
+
+            // Informations sur la grossesse
+            'age_gestationnel' => 'nullable|integer',
+
+            // Travail et accouchement
+            'travail' => 'nullable|in:spontane,declenche',
+            'presentation' => 'nullable|string',
+            'mode_accouchement' => 'nullable|string',
+
+            // Périnée
+            'episiotomie' => 'nullable|boolean',
+            'dechirure' => 'nullable|boolean',
+
+            // Délivrance
+            'delivrance' => 'nullable|string',
+            'mode_delivrance' => 'nullable|string',
+            'poids_placenta' => 'nullable|numeric',
+
+            // Bébé
+            'peau_a_peau' => 'nullable|boolean',
+            'poids_bebe' => 'nullable|numeric',
+            'taille_bebe' => 'nullable|numeric',
+            'perimetre_cranien_bebe' => 'nullable|numeric',
+            'perimetre_thoracique_bebe' => 'nullable|numeric',
+            'sexe' => 'nullable|in:masculin,feminin',
+            'mise_au_sein' => 'nullable|boolean',
+            'vitamine_k' => 'nullable|boolean',
+
+            // Notes
+            'observations' => 'nullable|string',
+            'complications' => 'nullable|string',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            // Récupérer l'ID de la sage-femme à partir de l'utilisateur connecté
+            $sageFemme = SageFemme::where('user_id', auth()->user()->id)->first();
+
+            if (!$sageFemme) {
+                throw new \Exception('Utilisateur non autorisé à créer des accouchements.');
+            }
+
+            // Créer l'accouchement avec tous les champs
+            $accouchementData = [
+                'dossier_patient_id' => $validated['dossier_patient_id'],
+                'sage_femme_id' => $sageFemme->id,
+            ];
+
+            // Ajouter tous les champs disponibles dans validated
+            foreach ($validated as $key => $value) {
+                if ($key !== 'dossier_patient_id') {
+                    $accouchementData[$key] = $value;
+                }
+            }
+
+            $accouchement = Accouchement::create($accouchementData);
+
+            DB::commit();
+
+            return back()->with('success', 'Accouchement enregistré avec succès.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            // Log l'erreur pour le débogage
+            \Log::error('Erreur lors de l\'enregistrement de l\'accouchement', [
+                'user_id' => auth()->user()->id ?? 'non connecté',
+                'request_data' => $request->all(),
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return back()->withErrors(['error' => 'Erreur lors de l\'enregistrement de l\'accouchement: ' . $e->getMessage()]);
+        }
     }
 
 

@@ -1,27 +1,12 @@
 'use client';
 
 import { useDossierPatient } from '@/contexts/dossier-patient-context';
-import { router, useForm, usePage } from '@inertiajs/react';
+import { router, useForm } from '@inertiajs/react';
 
 // Types pour les formulaires Inertia.js
 interface FormData {
-    [key: string]: string | number | File | null | undefined;
+    [key: string]: string | number | File | boolean | null | undefined;
 }
-
-type AuthUser = {
-    nom: string;
-    prenom: string;
-    role?: string;
-    id: number;
-    // Ajoutez d'autres propriétés utilisateur si nécessaire
-};
-
-type PageProps = {
-    auth: {
-        user: AuthUser;
-    };
-    // Ajoutez d'autres propriétés de page si nécessaire
-};
 
 interface InertiaFormData {
     data: FormData;
@@ -47,15 +32,30 @@ function useRealForm(initialData: FormData) {
 export function useFormHandlers() {
     const { setIsDialogOpen, refreshData } = useDossierPatient();
 
-    const handleSubmit = (form: InertiaFormData, routeName: string) => {
+    const handleSubmit = (
+        form: InertiaFormData,
+        routeName: string,
+        options?: {
+            onSuccess?: () => void;
+            onError?: (errors: Record<string, string>) => void;
+        },
+    ) => {
         router.post(routeName, form.data, {
             onSuccess: () => {
-                setIsDialogOpen(false);
-                form.reset();
-                refreshData();
+                if (options?.onSuccess) {
+                    options.onSuccess();
+                } else {
+                    setIsDialogOpen(false);
+                    form.reset();
+                    refreshData();
+                }
             },
             onError: (errors: Record<string, string>) => {
-                console.error('Erreurs de validation:', errors);
+                if (options?.onError) {
+                    options.onError(errors);
+                } else {
+                    console.error('Erreurs de validation:', errors);
+                }
             },
         });
     };
@@ -75,12 +75,10 @@ export function useFormHandlers() {
 
 export function useConsultationForm() {
     const { dossier } = useDossierPatient();
-    const { props } = usePage<PageProps>();
-    const authUser = props.auth.user;
 
     const initialData = {
         dossier_patient_id: dossier.id,
-        sage_femme_id: authUser.id,
+        // Champs communs (14)
         date: '',
         type_consultation: '',
         poids: '',
@@ -93,6 +91,68 @@ export function useConsultationForm() {
         prescriptions: '',
         examens_prescrits: '',
         recommandations: '',
+
+        // Champs CPN (10)
+        age_gestationnel_semaines: '',
+        plaintes: '',
+        dents_gencives: '',
+        varices: '',
+        maf: '',
+        vulve: '',
+        examen_speculum: '',
+        toucher_vaginal: '',
+        etat_bassin: '',
+        prochain_rdv: '',
+
+        // Champs CPP (17)
+        jour_postnatal: '',
+        montee_lait: '',
+        presence_gercures: false,
+        engorgement_mamaire: false,
+        involution_uterine: '',
+        perinee: '',
+        lochies: '',
+        mollets: '',
+        toucher_vaginal_cpp: '',
+        contraception: '',
+        poids_nouveau_ne: '',
+        taille_nouveau_ne: '',
+        perimetre_cranien_nouveau_ne: '',
+        perimetre_thoracique_nouveau_ne: '',
+        temperature_nouveau_ne: '',
+        cordon: '',
+        reflexes: '',
+    };
+
+    return useRealForm(initialData);
+}
+
+export function useAccouchementForm() {
+    const { dossier } = useDossierPatient();
+
+    const initialData = {
+        dossier_patient_id: dossier.id,
+        date_accouchement: '',
+        heure_accouchement: '',
+        age_gestationnel: '',
+        travail: '',
+        presentation: '',
+        mode_accouchement: '',
+        episiotomie: false,
+        dechirure: false,
+        delivrance: '',
+        mode_delivrance: '',
+        poids_placenta: '',
+        peau_a_peau: false,
+        poids_bebe: '',
+        taille_bebe: '',
+        perimetre_cranien_bebe: '',
+        perimetre_thoracique_bebe: '',
+        sexe: '',
+        mise_au_sein: false,
+        vitamine_k: false,
+        complications: '',
+        observations: '',
     };
 
     return useRealForm(initialData);
@@ -170,30 +230,6 @@ export function useNoteSuiviForm() {
         date_note: '',
         type_note: '',
         contenu: '',
-    };
-
-    return useRealForm(initialData);
-}
-
-export function useAccouchementForm() {
-    const { dossier } = useDossierPatient();
-
-    const initialData = {
-        dossier_id: dossier.id,
-        date_accouchement: '',
-        type_accouchement: '',
-        duree_travail: '',
-        duree_expulsion: '',
-        presentation: '',
-        poids_bebe: '',
-        taille_bebe: '',
-        perimetre_cranien: '',
-        sexe: '',
-        apgar_1min: '',
-        apgar_5min: '',
-        complications: '',
-        observations_accouchement: '',
-        equipe_medicale: '',
     };
 
     return useRealForm(initialData);
