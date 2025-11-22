@@ -489,45 +489,37 @@ export function ConsultationForm({ isOpen, onClose, onComplete }: ConsultationFo
                             <h3 className="text-sm font-medium text-pink-600">Allaitement</h3>
 
                             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                                <div className="space-y-2">
-                                    <Label className="text-pink-800" htmlFor="montee_lait">
+                                <div className="flex items-center justify-between rounded-xl border border-pink-200 bg-pink-50/30 p-3">
+                                    <Label htmlFor="montee_lait" className="text-pink-800 cursor-pointer">
                                         Montée de lait
                                     </Label>
-                                    <Select
-                                        value={getStringValue(form.data.montee_lait)}
-                                        onValueChange={(value) => handleInputChange('montee_lait', value)}
-                                    >
-                                        <SelectTrigger className="rounded-xl border-pink-300 focus:border-pink-500 focus:ring-pink-500">
-                                            <SelectValue placeholder="Sélectionner" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="oui">Oui</SelectItem>
-                                            <SelectItem value="non">Non</SelectItem>
-                                            <SelectItem value="partielle">Partielle</SelectItem>
-                                        </SelectContent>
-                                    </Select>
+                                    <Checkbox
+                                        id="montee_lait"
+                                        checked={getBooleanValue(form.data.montee_lait)}
+                                        onCheckedChange={(checked) => handleInputChange('montee_lait', checked === true)}
+                                    />
                                 </div>
 
-                                <div className="flex items-center space-x-2 pt-8">
+                                <div className="flex items-center justify-between rounded-xl border border-pink-200 bg-pink-50/30 p-3">
+                                    <Label htmlFor="presence_gercures" className="text-pink-800 cursor-pointer">
+                                        Présence de gerçures
+                                    </Label>
                                     <Checkbox
                                         id="presence_gercures"
                                         checked={getBooleanValue(form.data.presence_gercures)}
                                         onCheckedChange={(checked) => handleInputChange('presence_gercures', checked === true)}
                                     />
-                                    <Label htmlFor="presence_gercures" className="text-pink-800">
-                                        Présence de gerçures
-                                    </Label>
                                 </div>
 
-                                <div className="flex items-center space-x-2 pt-8">
+                                <div className="flex items-center justify-between rounded-xl border border-pink-200 bg-pink-50/30 p-3">
+                                    <Label htmlFor="engorgement_mamaire" className="text-pink-800 cursor-pointer">
+                                        Engorgement mamaire
+                                    </Label>
                                     <Checkbox
                                         id="engorgement_mamaire"
                                         checked={getBooleanValue(form.data.engorgement_mamaire)}
                                         onCheckedChange={(checked) => handleInputChange('engorgement_mamaire', checked === true)}
                                     />
-                                    <Label htmlFor="engorgement_mamaire" className="text-pink-800">
-                                        Engorgement mamaire
-                                    </Label>
                                 </div>
                             </div>
                         </div>
@@ -537,16 +529,14 @@ export function ConsultationForm({ isOpen, onClose, onComplete }: ConsultationFo
                             <h3 className="text-sm font-medium text-pink-600">Involution utérine</h3>
 
                             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                                <div className="space-y-2">
-                                    <Label className="text-pink-800" htmlFor="involution_uterine">
-                                        État involution
+                                <div className="flex items-center justify-between rounded-xl border border-pink-200 bg-pink-50/30 p-3">
+                                    <Label htmlFor="involution_uterine" className="text-pink-800 cursor-pointer">
+                                        Involution utérine normale
                                     </Label>
-                                    <Input
+                                    <Checkbox
                                         id="involution_uterine"
-                                        placeholder="Normale, retardée..."
-                                        value={getStringValue(form.data.involution_uterine)}
-                                        onChange={(e) => handleInputChange('involution_uterine', e.target.value)}
-                                        className="rounded-xl border-pink-300 focus:border-pink-500 focus:ring-pink-500"
+                                        checked={getBooleanValue(form.data.involution_uterine)}
+                                        onCheckedChange={(checked) => handleInputChange('involution_uterine', checked === true)}
                                     />
                                 </div>
 
@@ -554,13 +544,17 @@ export function ConsultationForm({ isOpen, onClose, onComplete }: ConsultationFo
                                     <Label className="text-pink-800" htmlFor="lochies">
                                         Lochies
                                     </Label>
-                                    <Input
-                                        id="lochies"
-                                        placeholder="Abondance, couleur, odeur"
-                                        value={getStringValue(form.data.lochies)}
-                                        onChange={(e) => handleInputChange('lochies', e.target.value)}
-                                        className="rounded-xl border-pink-300 focus:border-pink-500 focus:ring-pink-500"
-                                    />
+                                    <Select value={getStringValue(form.data.lochies)} onValueChange={(value) => handleInputChange('lochies', value)}>
+                                        <SelectTrigger id="lochies" className="rounded-xl border-pink-300 focus:border-pink-500 focus:ring-pink-500">
+                                            <SelectValue placeholder="Sélectionner l'état des lochies" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="normales">Normales</SelectItem>
+                                            <SelectItem value="abondantes">Abondantes</SelectItem>
+                                            <SelectItem value="malodorantes">Malodorantes</SelectItem>
+                                            <SelectItem value="absentes">Absentes</SelectItem>
+                                        </SelectContent>
+                                    </Select>
                                 </div>
                             </div>
                         </div>
@@ -719,16 +713,14 @@ export function ConsultationForm({ isOpen, onClose, onComplete }: ConsultationFo
                                     />
                                 </div>
 
-                                <div className="space-y-2">
-                                    <Label className="text-pink-800" htmlFor="reflexes">
-                                        Réflexes
+                                <div className="flex items-center justify-between rounded-xl border border-pink-200 bg-pink-50/30 p-3">
+                                    <Label htmlFor="reflexes" className="text-pink-800 cursor-pointer">
+                                        Réflexes normaux
                                     </Label>
-                                    <Input
+                                    <Checkbox
                                         id="reflexes"
-                                        placeholder="Réflexes archaïques"
-                                        value={getStringValue(form.data.reflexes)}
-                                        onChange={(e) => handleInputChange('reflexes', e.target.value)}
-                                        className="rounded-xl border-pink-300 focus:border-pink-500 focus:ring-pink-500"
+                                        checked={getBooleanValue(form.data.reflexes)}
+                                        onCheckedChange={(checked) => handleInputChange('reflexes', checked === true)}
                                     />
                                 </div>
                             </div>

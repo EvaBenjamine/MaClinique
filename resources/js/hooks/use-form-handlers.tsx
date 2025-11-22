@@ -106,12 +106,12 @@ export function useConsultationForm() {
 
         // Champs CPP (17)
         jour_postnatal: '',
-        montee_lait: '',
+        montee_lait: false,
         presence_gercures: false,
         engorgement_mamaire: false,
-        involution_uterine: '',
+        involution_uterine: false,
         perinee: '',
-        lochies: '',
+        lochies: 'normales',
         mollets: '',
         toucher_vaginal_cpp: '',
         contraception: '',
@@ -121,7 +121,7 @@ export function useConsultationForm() {
         perimetre_thoracique_nouveau_ne: '',
         temperature_nouveau_ne: '',
         cordon: '',
-        reflexes: '',
+        reflexes: false,
     };
 
     return useRealForm(initialData);
