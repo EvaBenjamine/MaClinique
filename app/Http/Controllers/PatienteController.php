@@ -201,11 +201,21 @@ class PatienteController extends Controller
             'alcool' => 'nullable|boolean',
             'activite_physique' => 'nullable|string|max:255',
             'regime_alimentaire' => 'nullable|string|max:255',
-            'sage_femme_id' => 'nullable|exists:sage_femmes,id',
+            'sage_femme_id' => 'required|exists:sage_femmes,id',
             'statut_dossier' => 'nullable|string|max:255',
             'notes_importantes' => 'nullable|string|max:1000',
             'recommandations_particulieres' => 'nullable|string|max:1000',
+        ], [
+            'sage_femme_id.required' => 'Veuillez sélectionner une sage-femme assignée.',
+            'sage_femme_id.exists' => 'La sage-femme sélectionnée n\'existe pas.',
         ]);
+
+        // Calculer automatiquement la date d'accouchement si DDR est fournie
+        if (!empty($validated['date_derniere_regle']) && empty($validated['date_accouchement_prevue'])) {
+            $validated['date_accouchement_prevue'] = \Carbon\Carbon::parse($validated['date_derniere_regle'])
+                ->addDays(280)
+                ->toDateString();
+        }
 
         try {
             DB::beginTransaction();
@@ -237,7 +247,7 @@ class PatienteController extends Controller
             // Créer le dossier de la patiente
             $dossier = DossierPatient::create([
                 'patiente_id' => $patiente->id,
-                'sage_femme_id' => $validated['sage_femme_id'] ?? null,
+                'sage_femme_id' => $validated['sage_femme_id'],
                 'date_derniere_regle' => $validated['date_derniere_regle'] ?? null,
                 'date_accouchement_prevue' => $validated['date_accouchement_prevue'] ?? null,
                 'grossesse_multiple' => $validated['grossesse_multiple'] ?? false,

@@ -65,7 +65,7 @@ const steps = [
         id: 'followup',
         title: 'Suivi médical',
         description: 'Assignment et notes importantes',
-        requiredFields: [],
+        requiredFields: ['sage_femme_id'],
     },
 ];
 
@@ -136,6 +136,17 @@ export default function AddPatienteModal({ isOpen, onClose, sagesFemmes, onCompl
         }
     }, [isOpen, reset]);
 
+    // Calculer automatiquement la date d'accouchement prévue (DDR + 280 jours)
+    useEffect(() => {
+        if (data.date_derniere_regle) {
+            const ddr = new Date(data.date_derniere_regle);
+            // Ajouter 280 jours (40 semaines)
+            ddr.setDate(ddr.getDate() + 280);
+            const dateAccouchementPrevue = ddr.toISOString().split('T')[0];
+            setData('date_accouchement_prevue', dateAccouchementPrevue);
+        }
+    }, [data.date_derniere_regle, setData]);
+
     // Gérer la soumission du formulaire
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -192,8 +203,9 @@ export default function AddPatienteModal({ isOpen, onClose, sagesFemmes, onCompl
             case 'obstetrical':
             case 'medical':
             case 'lifestyle':
-            case 'followup':
                 return true;
+            case 'followup':
+                return Boolean(data.sage_femme_id && !errors.sage_femme_id);
             default:
                 return true;
         }
@@ -417,14 +429,14 @@ export default function AddPatienteModal({ isOpen, onClose, sagesFemmes, onCompl
 
                             <div className="space-y-2">
                                 <Label className="text-pink-800" htmlFor="date_accouchement_prevue">
-                                    Date d'accouchement prévue
+                                    Date d'accouchement prévue{' '}
                                 </Label>
                                 <Input
                                     id="date_accouchement_prevue"
                                     type="date"
                                     value={data.date_accouchement_prevue}
-                                    onChange={(e) => setData('date_accouchement_prevue', e.target.value)}
-                                    className="rounded-xl border-pink-300 focus:border-pink-500 focus:ring-pink-500"
+                                    readOnly
+                                    className="rounded-xl border-pink-300 bg-pink-50 focus:border-pink-500 focus:ring-pink-500"
                                 />
                             </div>
                         </div>
@@ -782,7 +794,7 @@ export default function AddPatienteModal({ isOpen, onClose, sagesFemmes, onCompl
 
                         <div className="space-y-2">
                             <Label className="text-pink-800" htmlFor="sage_femme_id">
-                                Sage-femme assignée
+                                Sage-femme assignée <span className="text-red-500">*</span>
                             </Label>
                             <Select value={data.sage_femme_id} onValueChange={(value) => setData('sage_femme_id', value)}>
                                 <SelectTrigger className="rounded-xl border-pink-300 focus:border-pink-500 focus:ring-pink-500">
@@ -796,6 +808,8 @@ export default function AddPatienteModal({ isOpen, onClose, sagesFemmes, onCompl
                                     ))}
                                 </SelectContent>
                             </Select>
+                            {errors.sage_femme_id && <p className="text-sm text-red-500">{errors.sage_femme_id}</p>}
+                            {!data.sage_femme_id && <p className="text-xs text-pink-600">Ce champ est obligatoire</p>}
                         </div>
 
                         <div className="space-y-2">
