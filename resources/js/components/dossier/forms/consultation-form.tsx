@@ -490,7 +490,7 @@ export function ConsultationForm({ isOpen, onClose, onComplete }: ConsultationFo
 
                             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                                 <div className="flex items-center justify-between rounded-xl border border-pink-200 bg-pink-50/30 p-3">
-                                    <Label htmlFor="montee_lait" className="text-pink-800 cursor-pointer">
+                                    <Label htmlFor="montee_lait" className="cursor-pointer text-pink-800">
                                         Montée de lait
                                     </Label>
                                     <Checkbox
@@ -501,7 +501,7 @@ export function ConsultationForm({ isOpen, onClose, onComplete }: ConsultationFo
                                 </div>
 
                                 <div className="flex items-center justify-between rounded-xl border border-pink-200 bg-pink-50/30 p-3">
-                                    <Label htmlFor="presence_gercures" className="text-pink-800 cursor-pointer">
+                                    <Label htmlFor="presence_gercures" className="cursor-pointer text-pink-800">
                                         Présence de gerçures
                                     </Label>
                                     <Checkbox
@@ -512,7 +512,7 @@ export function ConsultationForm({ isOpen, onClose, onComplete }: ConsultationFo
                                 </div>
 
                                 <div className="flex items-center justify-between rounded-xl border border-pink-200 bg-pink-50/30 p-3">
-                                    <Label htmlFor="engorgement_mamaire" className="text-pink-800 cursor-pointer">
+                                    <Label htmlFor="engorgement_mamaire" className="cursor-pointer text-pink-800">
                                         Engorgement mamaire
                                     </Label>
                                     <Checkbox
@@ -530,7 +530,7 @@ export function ConsultationForm({ isOpen, onClose, onComplete }: ConsultationFo
 
                             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                 <div className="flex items-center justify-between rounded-xl border border-pink-200 bg-pink-50/30 p-3">
-                                    <Label htmlFor="involution_uterine" className="text-pink-800 cursor-pointer">
+                                    <Label htmlFor="involution_uterine" className="cursor-pointer text-pink-800">
                                         Involution utérine normale
                                     </Label>
                                     <Checkbox
@@ -714,7 +714,7 @@ export function ConsultationForm({ isOpen, onClose, onComplete }: ConsultationFo
                                 </div>
 
                                 <div className="flex items-center justify-between rounded-xl border border-pink-200 bg-pink-50/30 p-3">
-                                    <Label htmlFor="reflexes" className="text-pink-800 cursor-pointer">
+                                    <Label htmlFor="reflexes" className="cursor-pointer text-pink-800">
                                         Réflexes normaux
                                     </Label>
                                     <Checkbox
